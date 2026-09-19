@@ -104,6 +104,7 @@ const blindUpCheckbox = document.querySelector("#blind-up-checkbox");
 const rotateIcons = document.querySelectorAll(".seat .rotate");
 const closeButtons = document.querySelectorAll(".close");
 const rebuyButtons = document.querySelectorAll(".rebuy");
+const awayButtons = document.querySelectorAll(".away");
 const notification = document.querySelector("#notification");
 const foldButton = document.querySelector("#fold-button");
 const actionButton = document.querySelector("#action-button");
@@ -165,6 +166,7 @@ const seatRefs = Array.from(document.querySelectorAll(".seat")).map((
 	rotateEl: seatEl.querySelector(".rotate"),
 	closeEl: seatEl.querySelector(".close"),
 	rebuyEl: seatEl.querySelector(".rebuy"),
+	awayEl: seatEl.querySelector(".away"),
 	winProbabilityEl: seatEl.querySelector(".win-probability"),
 	handStrengthEl: seatEl.querySelector(".hand-strength"),
 	outsEl: seatEl.querySelector(".outs"),
@@ -581,6 +583,8 @@ function createPlayerSnapshot(player) {
 		smallBlind: player.smallBlind === true,
 		bigBlind: player.bigBlind === true,
 		folded: player.folded === true,
+		away: player.away === true,
+		pendingRemoval: player.pendingRemoval === true,
 		chips: normalizeNumber(player.chips, 0),
 		allIn: player.allIn === true,
 		totalBet: normalizeNumber(player.totalBet, 0),
@@ -810,6 +814,8 @@ function normalizeSavedPlayer(player) {
 		smallBlind: player?.smallBlind === true,
 		bigBlind: player?.bigBlind === true,
 		folded: player?.folded === true,
+		away: player?.away === true,
+		pendingRemoval: player?.pendingRemoval === true,
 		chips: normalizeNumber(player?.chips, 0),
 		allIn: player?.allIn === true,
 		totalBet: normalizeNumber(player?.totalBet, 0),
@@ -968,6 +974,24 @@ function renderRestoredGameState() {
 			hidePlayerQr(player);
 		}
 	});
+
+	// Benched roster members (busted humans awaiting rebuy, away players) keep their seat.
+	const seatedSet = new Set(gameState.players);
+	gameState.allPlayers.forEach((player) => {
+		if (seatedSet.has(player) || (player.isBot && player.chips <= 0)) {
+			return;
+		}
+		bindSeatRefPlayer(player);
+		renderSeatSetupState(getSeatRef(player), {
+			visible: true,
+			isBot: player.isBot,
+			nameEditable: false,
+			controlsVisible: false,
+		});
+		renderPlayerSeat(player);
+		hidePlayerQr(player);
+	});
+	updateSeatManagementControls();
 
 	renderPot();
 	renderTableCommunityCards(communityCardSlots, gameState.communityCards);
@@ -2521,6 +2545,7 @@ function createPlayers() {
 		seatRef.playerSeatIndex = null;
 		seatRef.clearActionLabelState = null;
 		seatRef.clearWinnerReactionState = null;
+		seatRef.seatEl.classList.remove("joinable", "sitting-out");
 		if (seatRef.seatEl.classList.contains("hidden")) {
 			continue;
 		}
@@ -2537,55 +2562,12 @@ function createPlayers() {
 		!seatRef.seatEl.classList.contains("hidden")
 	);
 	for (const seatRef of activeSeatRefs) {
-		const seatIndex = gameState.players.length;
-		const playerState = {
+		const playerState = createPlayerState({
 			name: seatRef.nameEl.textContent,
 			isBot: seatRef.seatEl.classList.contains("bot"),
 			seatSlot: seatRef.seatSlot,
-			winnerReactionEmoji: "",
-			winnerReactionUntil: 0,
-			isWinner: false,
-			actionState: null,
-			winProbability: null,
-			lastNonFinalWinProbability: null,
-			seatIndex,
-			holeCards: [null, null],
-			visibleHoleCards: [false, false],
-			dealer: false,
-			smallBlind: false,
-			bigBlind: false,
-			folded: false,
-			chips: STARTING_STACK,
-			allIn: false,
-			totalBet: 0,
-			roundBet: 0,
-			stats: {
-				hands: 0,
-				handsWon: 0,
-				vpip: 0,
-				pfr: 0,
-				calls: 0,
-				aggressiveActs: 0,
-				reveals: 0,
-				showdowns: 0,
-				showdownsWon: 0,
-				folds: 0,
-				foldsPreflop: 0,
-				foldsPostflop: 0,
-				allins: 0,
-			},
-			botLine: {
-				preflopAggressor: false,
-				cbetIntent: null,
-				barrelIntent: null,
-				cbetMade: false,
-				barrelMade: false,
-				nonValueAggressionMade: false,
-				checkRaiseIntent: null,
-				passiveValueCheckIntent: null,
-			},
-			spotState: createPlayerSpotState(),
-		};
+			seatIndex: gameState.players.length,
+		});
 		bindSeatRefPlayer(playerState);
 		gameState.players.push(playerState);
 	}
@@ -2596,6 +2578,57 @@ function createPlayers() {
 		renderPlayerHoleCards(player);
 	});
 	gameState.allPlayers = gameState.players.slice();
+}
+
+function createPlayerState({ name, isBot, seatSlot, seatIndex }) {
+	return {
+		name,
+		isBot,
+		seatSlot,
+		winnerReactionEmoji: "",
+		winnerReactionUntil: 0,
+		isWinner: false,
+		actionState: null,
+		winProbability: null,
+		lastNonFinalWinProbability: null,
+		seatIndex,
+		holeCards: [null, null],
+		visibleHoleCards: [false, false],
+		dealer: false,
+		smallBlind: false,
+		bigBlind: false,
+		folded: false,
+		chips: STARTING_STACK,
+		allIn: false,
+		totalBet: 0,
+		roundBet: 0,
+		stats: {
+			hands: 0,
+			handsWon: 0,
+			vpip: 0,
+			pfr: 0,
+			calls: 0,
+			aggressiveActs: 0,
+			reveals: 0,
+			showdowns: 0,
+			showdownsWon: 0,
+			folds: 0,
+			foldsPreflop: 0,
+			foldsPostflop: 0,
+			allins: 0,
+		},
+		botLine: {
+			preflopAggressor: false,
+			cbetIntent: null,
+			barrelIntent: null,
+			cbetMade: false,
+			barrelMade: false,
+			nonValueAggressionMade: false,
+			checkRaiseIntent: null,
+			passiveValueCheckIntent: null,
+		},
+		spotState: createPlayerSpotState(),
+	};
 }
 
 function setDealer() {
@@ -2687,7 +2720,7 @@ function preFlop() {
 	setSummaryButtonsVisible(false);
 	clearActionLabels();
 	clearActiveTurnPlayer(false);
-	seatRefs.forEach((seatRef) => seatRef.rebuyEl?.classList.add("hidden"));
+	applyBetweenHandsRosterChanges();
 
 	const nextHandPlan = createNextHandTransitionPlan(gameState, totalHands);
 	applyPlayerPatches(nextHandPlan.playerPatches);
@@ -2702,8 +2735,18 @@ function preFlop() {
 	setCommunityCards(gameState.communityCards);
 
 	nextHandPlan.bustedPlayers.forEach((player) => {
-		renderSeatSetupState(getSeatRef(player), { visible: false });
-		enqueueNotification(`${player.name} 탈락!`);
+		if (player.isBot) {
+			// Busted bots leave the table for good.
+			renderSeatSetupState(getSeatRef(player), { visible: false });
+			enqueueNotification(`${player.name} 탈락!`);
+		} else {
+			// Busted humans keep their seat and can press the rebuy button at any time
+			// to return with a fresh stack on the next hand.
+			getSeatRef(player)?.seatEl.classList.add("sitting-out");
+			renderPlayerSeat(player);
+			hidePlayerQr(player);
+			enqueueNotification(`${player.name} 칩 소진 – 리바인하면 복귀합니다.`);
+		}
 		logFlow("player_bust", { name: player.name });
 		logSpeedmodeEvent("player_bust", {
 			handId: gameState.handId,
@@ -2711,6 +2754,7 @@ function preFlop() {
 			seatIndex: player.seatIndex,
 		});
 	});
+	updateSeatManagementControls();
 
 	updateWinProbabilityDisplays();
 	updateHandStrengthDisplays();
@@ -3191,6 +3235,29 @@ function startBettingRound(options = {}) {
 		}
 
 		// --- Human Branch ------------------------------------------------------------
+		// An away ("자리비움") human acts automatically - check when free, fold otherwise -
+		// so the table keeps moving without them.
+		if (player.away === true) {
+			setActiveTurnPlayer(player);
+			humanTurnController.hide();
+			enqueueBotAction(() => {
+				const actionState = getPlayerActionState(gameState, player);
+				const resolvedAction = applyTurnAction(
+					player,
+					actionState.canCheck ? { action: "check" } : { action: "fold" },
+				);
+				const turnMeta = getResolvedTurnMeta(resolvedAction);
+				continueAfterResolvedTurn({
+					player,
+					cycles,
+					nextPlayer,
+					logPrefix: turnMeta.logPrefix,
+					advanceReason: turnMeta.advanceReason,
+				});
+			});
+			saveCurrentGameSnapshot();
+			return;
+		}
 		humanTurnController.runHumanTurn({
 			player,
 			cycles,
@@ -3359,7 +3426,7 @@ function finishHandAfterShowdown() {
 	setStartButtonLabel("새 라운드");
 	startButton.classList.remove("hidden");
 	setCurrentFlowState({ type: "between-hands" });
-	updateRebuySeatVisibility();
+	updateSeatManagementControls();
 	startNewRoundCountdown();
 	queueStateSync();
 	saveCurrentGameSnapshot();
@@ -3527,30 +3594,258 @@ function rotateSeat(ev) {
 function deletePlayer(ev) {
 	const seatEl = ev.currentTarget.closest(".seat");
 	const seatRef = seatRefs.find((currentSeatRef) => currentSeatRef.seatEl === seatEl);
-	renderSeatSetupState(seatRef, { visible: false });
+	if (!gameState.gameStarted || gameState.gameFinished) {
+		renderSeatSetupState(seatRef, { visible: false });
+		return;
+	}
+	if (!gameState.handInProgress) {
+		removeBotBetweenHands(seatRef);
+		return;
+	}
+	toggleBotPendingRemoval(seatRef);
 }
 
-// Between hands, a busted player (chips <= 0) can rebuy to the starting stack instead of being
-// removed from the table on the next hand.
+/* --------------------------------------------------------------------------------------------------
+Mid-Game Roster Management (rebuy, away, bot swap, joins)
+---------------------------------------------------------------------------------------------------*/
+
+function getRosterPlayerBySeatSlot(seatSlot) {
+	return gameState.allPlayers.find((player) => player.seatSlot === seatSlot) ?? null;
+}
+
+function getNextRosterSeatIndex() {
+	return gameState.allPlayers.reduce(
+		(maxSeatIndex, player) => Math.max(maxSeatIndex, player.seatIndex),
+		-1,
+	) + 1;
+}
+
+// Reset the per-hand state of a player who leaves the seated lineup so their idle seat
+// renders cleanly; the next-hand transition plan resets them again when they return.
+function benchPlayerForNewHand(player) {
+	Object.assign(player, {
+		folded: false,
+		allIn: false,
+		roundBet: 0,
+		totalBet: 0,
+		holeCards: [null, null],
+		visibleHoleCards: [false, false],
+		dealer: false,
+		smallBlind: false,
+		bigBlind: false,
+		actionState: null,
+		winProbability: null,
+		isWinner: false,
+	});
+}
+
+// Between hands the seated lineup can change: away players sit out, benched players with
+// chips return (rebuys and "복귀"), and names typed into freed seats join as new players.
+function applyBetweenHandsRosterChanges() {
+	if (!gameState.gameStarted) {
+		return;
+	}
+
+	// Reserved bot kicks fire now that the hand is over.
+	gameState.players
+		.filter((player) => player.isBot && player.pendingRemoval === true)
+		.forEach((player) => {
+			if (gameState.players.length <= 2) {
+				player.pendingRemoval = false;
+				getSeatRef(player)?.seatEl.classList.remove("leaving");
+				return;
+			}
+			freeBotSeat(player);
+			enqueueNotification(
+				`${player.name} 내보냄 – 빈 자리에 이름을 입력하면 다음 핸드부터 참가합니다.`,
+			);
+			logFlow("bot_removed", { name: player.name });
+		});
+
+	seatRefs.forEach((seatRef) => {
+		if (
+			seatRef.seatEl.classList.contains("hidden") ||
+			!seatRef.seatEl.classList.contains("joinable")
+		) {
+			return;
+		}
+		const name = seatRef.nameEl.textContent.trim();
+		if (name === "") {
+			return;
+		}
+		const player = createPlayerState({
+			name,
+			isBot: false,
+			seatSlot: seatRef.seatSlot,
+			seatIndex: getNextRosterSeatIndex(),
+		});
+		gameState.allPlayers.push(player);
+		bindSeatRefPlayer(player);
+		seatRef.seatEl.classList.remove("joinable");
+		renderSeatSetupState(seatRef, { isBot: false, nameEditable: false });
+		enqueueNotification(`${name} 테이블 참가.`);
+		logFlow("player_join", { name });
+	});
+
+	const seatedSet = new Set(gameState.players);
+	const departing = gameState.players.filter((player) => player.away === true);
+	const returning = gameState.allPlayers
+		.filter((player) =>
+			!seatedSet.has(player) && player.away !== true && player.chips > 0
+		)
+		.sort((a, b) => a.seatSlot - b.seatSlot);
+	if (departing.length === 0 && returning.length === 0) {
+		return;
+	}
+
+	const remaining = gameState.players.filter((player) => player.away !== true);
+	// Never sit out so many players that the next hand cannot start - away players then
+	// stay seated and simply auto-check/fold until someone else can take their place.
+	const allowDepartures = remaining.length + returning.length >= 2;
+	if (allowDepartures) {
+		departing.forEach((player) => {
+			benchPlayerForNewHand(player);
+			getSeatRef(player)?.seatEl.classList.add("sitting-out");
+			renderPlayerSeat(player);
+			hidePlayerQr(player);
+			enqueueNotification(`${player.name} 자리 비움.`);
+			logFlow("player_away", { name: player.name });
+		});
+	}
+	returning.forEach((player) => {
+		getSeatRef(player)?.seatEl.classList.remove("sitting-out");
+		enqueueNotification(`${player.name} 게임 참가.`);
+		logFlow("player_return", { name: player.name });
+	});
+	gameState.players = (allowDepartures ? remaining : gameState.players.slice())
+		.concat(returning);
+}
+
+// A busted player (chips <= 0) can press rebuy at ANY time: seated ones (between hands)
+// restart with a fresh stack right away, benched ones rejoin on the next hand.
 function updateRebuySeatVisibility() {
 	seatRefs.forEach((seatRef) => {
 		seatRef.rebuyEl?.classList.add("hidden");
 	});
-	if (gameState.handInProgress) {
+	if (!gameState.gameStarted || gameState.gameFinished) {
 		return;
 	}
-	gameState.players.forEach((player) => {
+	gameState.allPlayers.forEach((player) => {
 		if (player.chips > 0) {
 			return;
+		}
+		const seated = gameState.players.includes(player);
+		if (seated && gameState.handInProgress) {
+			return; // still finishing the hand (busted all-in)
+		}
+		if (!seated && player.isBot) {
+			return; // busted bots leave the table
 		}
 		getSeatRef(player)?.rebuyEl?.classList.remove("hidden");
 	});
 }
 
+// Keeps the per-seat management controls in sync: rebuy buttons, the away/return toggle
+// on human seats, and the between-hands kick (X) control on bot seats.
+function updateSeatManagementControls() {
+	updateRebuySeatVisibility();
+	seatRefs.forEach((seatRef) => {
+		seatRef.awayEl?.classList.add("hidden");
+	});
+	if (!gameState.gameStarted || gameState.gameFinished) {
+		return;
+	}
+	gameState.allPlayers.forEach((player) => {
+		const seatRef = getSeatRef(player);
+		if (!seatRef) {
+			return;
+		}
+		const seated = gameState.players.includes(player);
+		if (!player.isBot && player.chips > 0 && seatRef.awayEl) {
+			seatRef.awayEl.textContent = player.away === true ? "복귀" : "자리비움";
+			seatRef.awayEl.classList.remove("hidden");
+		}
+		if (player.isBot) {
+			// The kick control stays available during hands too - a mid-hand click only
+			// reserves the removal for the end of the hand.
+			seatRef.closeEl?.classList.toggle(
+				"hidden",
+				!(seated && gameState.players.length > 2),
+			);
+			seatRef.seatEl.classList.toggle(
+				"leaving",
+				seated && player.pendingRemoval === true,
+			);
+		} else {
+			seatRef.closeEl?.classList.add("hidden");
+		}
+		seatRef.seatEl.classList.toggle("sitting-out", !seated);
+	});
+}
+
+// Removes a bot from the roster and turns their seat into an open name-entry seat.
+function freeBotSeat(player) {
+	gameState.players = gameState.players.filter((p) => p !== player);
+	gameState.allPlayers = gameState.allPlayers.filter((p) => p !== player);
+	const seatRef = getSeatRef(player);
+	if (!seatRef) {
+		return;
+	}
+	seatRef.playerSeatIndex = null;
+	seatRef.clearActionLabelState = null;
+	seatRef.clearWinnerReactionState = null;
+	clearRenderedSeat(seatRef);
+	seatRef.seatEl.classList.remove("sitting-out", "bot", "leaving");
+	seatRef.seatEl.classList.add("joinable");
+	seatRef.closeEl?.classList.add("hidden");
+	seatRef.nameEl.textContent = "";
+	seatRef.totalEl.textContent = `${STARTING_STACK}`;
+	renderSeatSetupState(seatRef, { visible: true, isBot: false, nameEditable: true });
+}
+
+function removeBotBetweenHands(seatRef) {
+	const player = getRosterPlayerBySeatSlot(seatRef?.seatSlot);
+	if (
+		!player || !player.isBot || gameState.handInProgress ||
+		!gameState.players.includes(player) || gameState.players.length <= 2
+	) {
+		return;
+	}
+	freeBotSeat(player);
+	updateSeatManagementControls();
+	enqueueNotification(
+		`${player.name} 내보냄 – 빈 자리에 이름을 입력하면 다음 핸드부터 참가합니다.`,
+	);
+	logFlow("bot_removed", { name: player.name });
+	queueStateSync();
+	saveCurrentGameSnapshot();
+}
+
+// During a hand the kick is only reserved: the bot finishes the current hand and leaves
+// when it ends. Clicking the X again cancels the reservation.
+function toggleBotPendingRemoval(seatRef) {
+	const player = getRosterPlayerBySeatSlot(seatRef?.seatSlot);
+	if (!player || !player.isBot || !gameState.players.includes(player)) {
+		return;
+	}
+	player.pendingRemoval = player.pendingRemoval !== true;
+	seatRef.seatEl.classList.toggle("leaving", player.pendingRemoval);
+	enqueueNotification(
+		player.pendingRemoval
+			? `${player.name} 내보내기 예약 – 이번 핸드가 끝나면 나갑니다.`
+			: `${player.name} 내보내기 예약 취소.`,
+	);
+	logFlow("bot_removal_toggle", {
+		name: player.name,
+		pending: player.pendingRemoval,
+	});
+	saveCurrentGameSnapshot();
+}
+
 function handleRebuyClick(ev) {
 	const seatEl = ev.currentTarget.closest(".seat");
 	const seatRef = seatRefs.find((currentSeatRef) => currentSeatRef.seatEl === seatEl);
-	const player = gameState.players.find((p) => p.seatSlot === seatRef?.seatSlot);
+	const player = getRosterPlayerBySeatSlot(seatRef?.seatSlot);
 	if (!player || player.chips > 0) {
 		return;
 	}
@@ -3558,8 +3853,42 @@ function handleRebuyClick(ev) {
 	renderPlayerSeat(player);
 	renderPlayerChipStacks();
 	seatRef.rebuyEl?.classList.add("hidden");
-	enqueueNotification(`${player.name} 리바인 (${STARTING_STACK} 칩).`);
+	if (gameState.players.includes(player)) {
+		enqueueNotification(`${player.name} 리바인 (${STARTING_STACK} 칩).`);
+	} else {
+		enqueueNotification(
+			`${player.name} 리바인 (${STARTING_STACK} 칩) – 다음 핸드부터 참가합니다.`,
+		);
+	}
 	logFlow("player_rebuy", { name: player.name, chips: STARTING_STACK });
+	updateSeatManagementControls();
+	queueStateSync();
+	saveCurrentGameSnapshot();
+}
+
+function handleAwayToggleClick(ev) {
+	const seatEl = ev.currentTarget.closest(".seat");
+	const seatRef = seatRefs.find((currentSeatRef) => currentSeatRef.seatEl === seatEl);
+	const player = getRosterPlayerBySeatSlot(seatRef?.seatSlot);
+	if (!player || player.isBot) {
+		return;
+	}
+	player.away = player.away !== true;
+	if (player.away) {
+		enqueueNotification(`${player.name} 자리비움 – 다음 핸드부터 쉽니다.`);
+		// If it is their turn right now, fold for them so the table keeps moving.
+		if (
+			gameState.activeSeatIndex === player.seatIndex &&
+			gameState.players.includes(player) &&
+			!foldButton.classList.contains("hidden")
+		) {
+			foldButton.click();
+		}
+	} else {
+		enqueueNotification(`${player.name} 복귀 – 다음 핸드부터 참가합니다.`);
+	}
+	logFlow("player_away_toggle", { name: player.name, away: player.away });
+	updateSeatManagementControls();
 	queueStateSync();
 	saveCurrentGameSnapshot();
 }
@@ -3668,6 +3997,9 @@ function init() {
 	}
 	for (const rebuyButton of rebuyButtons) {
 		rebuyButton.addEventListener("click", handleRebuyClick, false);
+	}
+	for (const awayButton of awayButtons) {
+		awayButton.addEventListener("click", handleAwayToggleClick, false);
 	}
 
 	const savedGameSnapshot = readSavedGameSnapshot();

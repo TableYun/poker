@@ -10,9 +10,20 @@ Version log writing guide:
 - Add optional contributor credits as dedicated metadata instead of release notes.
 */
 
-export const APP_VERSION = "1.9.4";
+export const APP_VERSION = "1.9.5";
 
 export const VERSION_LOG = [
+	{
+		version: "1.9.5",
+		date: "2026-09-19",
+		title: "리바인·자리비움·중간 참가",
+		notes: [
+			"칩을 다 잃어도 좌석이 사라지지 않고, 언제든 리바인을 눌러 다음 핸드부터 복귀할 수 있습니다.",
+			"사람 좌석에 자리비움 버튼이 생겼습니다. 자리비움 중에는 자동으로 체크/폴드되고, 다음 핸드부터 쉬며, 복귀를 누르면 다시 참가합니다.",
+			"봇 좌석의 X로 봇을 내보낼 수 있습니다. 핸드 중에는 예약되어 핸드가 끝나면 나가고, 빈 자리에 이름을 입력하면 새 플레이어가 다음 핸드부터 참가합니다.",
+		],
+		estimated: false,
+	},
 	{
 		version: "1.9.4",
 		date: "2026-09-19",

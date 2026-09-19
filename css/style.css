@@ -1385,6 +1385,45 @@ main .seat.revealed.folded .hole-cards img:nth-of-type(2) {
     }
 }
 
+/* Away/return toggle on human seats, tucked under the hole cards. */
+.hole-cards .away {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translate(-50%, 40%);
+    z-index: 2200;
+    width: auto;
+    margin: 0;
+    padding: 0.4vmin 1.5vmin;
+    font-size: 0.65rem;
+    white-space: nowrap;
+}
+
+/* During a game the kick control stays subtle until hovered. */
+main .seat.bot .hole-cards .close {
+    opacity: 0.45;
+}
+
+main .seat.bot .hole-cards .close:hover,
+main .seat.leaving .hole-cards .close {
+    opacity: 1;
+}
+
+/* A bot reserved for removal: the armed X turns red until the hand ends or it is cancelled. */
+main .seat.leaving .hole-cards .close {
+    background-color: hsl(0, 75%, 62%);
+}
+
+/* A seated-out player (away, or busted and waiting to rebuy) stays visible but clearly idle. */
+main .seat.sitting-out .hole-cards img,
+main .seat.sitting-out .chips {
+    opacity: 0.4;
+}
+
+main .seat.sitting-out h3 {
+    opacity: 0.6;
+}
+
 .winner-reaction {
     position: absolute;
     left: 0px;
