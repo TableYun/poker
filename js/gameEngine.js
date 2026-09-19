@@ -849,28 +849,28 @@ export function getShortHandStrengthLabel(solvedHand) {
 		return "";
 	}
 	if (solvedHand.descr === "Royal Flush") {
-		return "Royal flush";
+		return "로열 플러시";
 	}
 	switch (solvedHand.name) {
 		case "Straight Flush":
-			return "Straight flush";
+			return "스트레이트 플러시";
 		case "Four of a Kind":
-			return "4 of a kind";
+			return "포카드";
 		case "Full House":
-			return "Full house";
+			return "풀하우스";
 		case "Flush":
-			return "Flush";
+			return "플러시";
 		case "Straight":
-			return "Straight";
+			return "스트레이트";
 		case "Three of a Kind":
-			return "3 of a kind";
+			return "트리플";
 		case "Two Pair":
-			return "2 Pair";
+			return "투페어";
 		case "Pair":
-			return "Pair";
+			return "원페어";
 		case "High Card":
 		default:
-			return "High card";
+			return "하이카드";
 	}
 }
 

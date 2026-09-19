@@ -100,6 +100,7 @@ const newRoundCancelButton = document.querySelector("#new-round-cancel-button");
 const instructionsButton = document.querySelector("#instructions-button");
 const rotateIcons = document.querySelectorAll(".seat .rotate");
 const closeButtons = document.querySelectorAll(".close");
+const rebuyButtons = document.querySelectorAll(".rebuy");
 const notification = document.querySelector("#notification");
 const foldButton = document.querySelector("#fold-button");
 const actionButton = document.querySelector("#action-button");
@@ -159,6 +160,7 @@ const seatRefs = Array.from(document.querySelectorAll(".seat")).map((
 	bigBlindEl: seatEl.querySelector(".big-blind"),
 	rotateEl: seatEl.querySelector(".rotate"),
 	closeEl: seatEl.querySelector(".close"),
+	rebuyEl: seatEl.querySelector(".rebuy"),
 	winProbabilityEl: seatEl.querySelector(".win-probability"),
 	handStrengthEl: seatEl.querySelector(".hand-strength"),
 	cardEls: seatEl.querySelectorAll(".card"),
@@ -224,6 +226,7 @@ const SAVED_GAME_STORAGE_KEY = "poker:saved-game:v1";
 const HISTORY_LOG = false; // Set to true to enable history logging in the console
 let DEBUG_FLOW = false; // Set to true for verbose game-flow logging
 const CHIP_UNIT = 10;
+const STARTING_STACK = 2000;
 
 const speedModeParam = new URLSearchParams(globalThis.location.search).get(
 	"speedmode",
@@ -289,6 +292,24 @@ const CARD_SUIT_SYMBOLS = {
 	H: "♥",
 	S: "♠",
 };
+// Display-only Korean labels for the raw hand names pokersolver returns (e.g. via showdown potResults).
+// Internal comparisons (WINNER_REACTION_*_HANDS) key off the original English names, not this map.
+const HAND_NAME_KO = {
+	"Royal Flush": "로열 플러시",
+	"Straight Flush": "스트레이트 플러시",
+	"Four of a Kind": "포카드",
+	"Full House": "풀하우스",
+	Flush: "플러시",
+	Straight: "스트레이트",
+	"Three of a Kind": "트리플",
+	"Two Pair": "투페어",
+	Pair: "원페어",
+	"High Card": "하이카드",
+};
+
+function translateHandName(name) {
+	return HAND_NAME_KO[name] ?? name;
+}
 
 const gameState = {
 	currentPhaseIndex: 0,
@@ -822,7 +843,7 @@ function renderRestoredGameState() {
 	instructionsButton.classList.add("hidden");
 	startButton.classList.toggle("hidden", gameState.handInProgress === true);
 	if (!gameState.handInProgress) {
-		setStartButtonLabel("New Round");
+		setStartButtonLabel("새 라운드");
 	}
 }
 
@@ -863,7 +884,7 @@ function resumeRestoredFlow(flowState = {}) {
 
 	setCurrentFlowState({ type: "between-hands" });
 	setSummaryButtonsVisible(true);
-	setStartButtonLabel("New Round");
+	setStartButtonLabel("새 라운드");
 	startButton.classList.remove("hidden");
 	startNewRoundCountdown();
 	saveCurrentGameSnapshot();
@@ -1411,7 +1432,7 @@ function renderVersionOverlay() {
 			credit.href = entry.credit.url;
 			credit.target = "_blank";
 			credit.rel = "noopener noreferrer";
-			credit.textContent = `Contributed by @${entry.credit.name}`;
+			credit.textContent = `기여: @${entry.credit.name}`;
 			heading.appendChild(credit);
 		}
 
@@ -1501,7 +1522,7 @@ function setStartButtonLabel(text) {
 
 function showNewRoundCountdown(seconds) {
 	if (!newRoundCountdown || !newRoundCountdownValue) {
-		setStartButtonLabel(`New Round in ${seconds}`);
+		setStartButtonLabel(`새 라운드 · ${seconds}초 후`);
 		return;
 	}
 	newRoundCountdownValue.textContent = String(seconds);
@@ -1533,10 +1554,10 @@ function clearNewRoundCountdown({ notify } = { notify: false }) {
 		);
 	}
 	if (!newRoundCountdown || !newRoundCountdownValue) {
-		setStartButtonLabel("New Round");
+		setStartButtonLabel("새 라운드");
 	}
 	if (notify && wasActive) {
-		enqueueNotification("New round countdown canceled.");
+		enqueueNotification("새 라운드 카운트다운이 취소되었습니다.");
 	}
 }
 
@@ -1614,17 +1635,17 @@ function getActionLabelDuration() {
 function getPlayerActionNotificationText(playerName, actionName, amount = 0) {
 	switch (actionName) {
 		case "fold":
-			return `${playerName} folded.`;
+			return `${playerName} 폴드.`;
 		case "check":
-			return `${playerName} checked.`;
+			return `${playerName} 체크.`;
 		case "call":
-			return `${playerName} called ${amount}.`;
+			return `${playerName} ${amount} 콜.`;
 		case "raise":
-			return `${playerName} raised to ${amount}.`;
+			return `${playerName} ${amount}(으)로 레이즈.`;
 		case "allin":
-			return `${playerName} is all-in.`;
+			return `${playerName} 올인.`;
 		default:
-			return `${playerName} did something…`;
+			return `${playerName}의 차례…`;
 	}
 }
 
@@ -2345,7 +2366,7 @@ function startGame() {
 			});
 			gameState.players = [];
 			gameState.allPlayers = [];
-			enqueueNotification("Not enough players");
+			enqueueNotification("플레이어가 부족합니다");
 		}
 	} else {
 		// New Round
@@ -2365,7 +2386,7 @@ function createPlayers() {
 			continue;
 		}
 		if (seatRef.nameEl.textContent.trim() === "") {
-			seatRef.nameEl.textContent = `Bot ${botIndex++}`;
+			seatRef.nameEl.textContent = `봇 ${botIndex++}`;
 			renderSeatSetupState(seatRef, { isBot: true });
 		} else {
 			renderSeatSetupState(seatRef, { isBot: false });
@@ -2394,7 +2415,7 @@ function createPlayers() {
 			smallBlind: false,
 			bigBlind: false,
 			folded: false,
-			chips: 2000,
+			chips: STARTING_STACK,
 			allIn: false,
 			totalBet: 0,
 			roundBet: 0,
@@ -2449,7 +2470,7 @@ function setDealer() {
 	}
 	renderPlayerSeat(dealerPlan.dealer);
 
-	enqueueNotification(`${gameState.players[0].name} is Dealer.`);
+	enqueueNotification(`${gameState.players[0].name} 딜러.`);
 }
 
 function updateBlindLevelForCurrentHand() {
@@ -2461,7 +2482,7 @@ function updateBlindLevelForCurrentHand() {
 	applyGameStatePatch(blindLevelUpdate.gameStatePatch);
 	if (blindLevelUpdate.blindsChanged) {
 		enqueueNotification(
-			`Blinds are now ${gameState.smallBlind}/${gameState.bigBlind}.`,
+			`블라인드가 ${gameState.smallBlind}/${gameState.bigBlind}(으)로 올랐습니다.`,
 		);
 	}
 }
@@ -2478,10 +2499,10 @@ function setBlinds() {
 	renderPot();
 
 	enqueueNotification(
-		`${blindPlan.smallBlindPlayer.name} posted small blind of ${blindPlan.smallBlindAmount}.`,
+		`${blindPlan.smallBlindPlayer.name} 스몰 블라인드 ${blindPlan.smallBlindAmount} 베팅.`,
 	);
 	enqueueNotification(
-		`${blindPlan.bigBlindPlayer.name} posted big blind of ${blindPlan.bigBlindAmount}.`,
+		`${blindPlan.bigBlindPlayer.name} 빅 블라인드 ${blindPlan.bigBlindAmount} 베팅.`,
 	);
 }
 
@@ -2523,6 +2544,7 @@ function preFlop() {
 	setSummaryButtonsVisible(false);
 	clearActionLabels();
 	clearActiveTurnPlayer(false);
+	seatRefs.forEach((seatRef) => seatRef.rebuyEl?.classList.add("hidden"));
 
 	const nextHandPlan = createNextHandTransitionPlan(gameState, totalHands);
 	applyPlayerPatches(nextHandPlan.playerPatches);
@@ -2538,7 +2560,7 @@ function preFlop() {
 
 	nextHandPlan.bustedPlayers.forEach((player) => {
 		renderSeatSetupState(getSeatRef(player), { visible: false });
-		enqueueNotification(`${player.name} is out of the game!`);
+		enqueueNotification(`${player.name} 탈락!`);
 		logFlow("player_bust", { name: player.name });
 		logSpeedmodeEvent("player_bust", {
 			handId: gameState.handId,
@@ -2555,7 +2577,7 @@ function preFlop() {
 	if (nextHandPlan.type === "game-over") {
 		const champion = nextHandPlan.champion;
 		clearActiveTurnPlayer(false);
-		enqueueNotification(`${champion.name} wins the game! 🏆`);
+		enqueueNotification(`${champion.name} 게임 승리! 🏆`);
 		// Reveal champion's stack
 		renderPlayerTotal(champion);
 		renderPlayerSeat(champion);
@@ -2658,17 +2680,17 @@ function setPhase() {
 	switch (phasePlan.phase) {
 		case "flop":
 			dealCommunityCards(phasePlan.cardsToDeal);
-			enqueueNotification("Flop (3 cards) dealt.");
+			enqueueNotification("플랍(3장) 공개.");
 			startBettingRound();
 			break;
 		case "turn":
 			dealCommunityCards(phasePlan.cardsToDeal);
-			enqueueNotification("Turn (4th card) dealt.");
+			enqueueNotification("턴(4번째 카드) 공개.");
 			startBettingRound();
 			break;
 		case "river":
 			dealCommunityCards(phasePlan.cardsToDeal);
-			enqueueNotification("River (5th card) dealt.");
+			enqueueNotification("리버(5번째 카드) 공개.");
 			startBettingRound();
 			break;
 		case "showdown":
@@ -2856,7 +2878,7 @@ function runBotTurn({ player, cycles, nextPlayer }) {
 	humanTurnController.hide();
 	clearPlayerActionLabel(player);
 	clearSeatActionVisualState(getSeatRef(player));
-	setPlayerSeatName(player, "thinking …");
+	setPlayerSeatName(player, "생각 중…");
 
 	enqueueBotAction(() => {
 		const decision = chooseBotAction(player, gameState);
@@ -3191,9 +3213,10 @@ function finishHandAfterShowdown() {
 	updateFastForwardButton();
 	renderStatsOverlay();
 	setSummaryButtonsVisible(true);
-	setStartButtonLabel("New Round");
+	setStartButtonLabel("새 라운드");
 	startButton.classList.remove("hidden");
 	setCurrentFlowState({ type: "between-hands" });
+	updateRebuySeatVisibility();
 	startNewRoundCountdown();
 	queueStateSync();
 	saveCurrentGameSnapshot();
@@ -3266,7 +3289,7 @@ function doShowdown() {
 			applyBotReveal(uncontestedWinner, revealDecision);
 			registerBotReveal(uncontestedWinner);
 			enqueueNotification(
-				`${uncontestedWinner.name} reveals ${
+				`${uncontestedWinner.name} 카드 공개: ${
 					revealDecision.codes.map(formatCardLabel).join(" ")
 				}`,
 			);
@@ -3285,7 +3308,7 @@ function doShowdown() {
 			showdownPlayers: activePlayers,
 			totalPayoutByPlayer,
 		});
-		enqueueNotification(`${uncontestedWinner.name} wins ${totalPot}!`);
+		enqueueNotification(`${uncontestedWinner.name} ${totalPot} 획득!`);
 		startChipTransferAnimation(commitPlan, () => {
 			finishHandAfterShowdown();
 		});
@@ -3306,20 +3329,20 @@ function doShowdown() {
 		);
 		if (allSame) {
 			const total = filteredResults.reduce((sum, r) => sum + r.amount, 0);
-			let msg = `${filteredResults[0].players[0]} wins ${total}`;
+			let msg = `${filteredResults[0].players[0]} ${total} 획득`;
 			if (filteredResults[0].hand) {
-				msg += ` with ${filteredResults[0].hand}`;
+				msg += ` (${translateHandName(filteredResults[0].hand)})`;
 			}
 			enqueueNotification(msg);
 		} else {
 			filteredResults.forEach((r) => {
 				if (r.players.length === 1) {
-					let msg = `${r.players[0]} wins ${r.amount}`;
-					if (r.hand) msg += ` with ${r.hand}`;
+					let msg = `${r.players[0]} ${r.amount} 획득`;
+					if (r.hand) msg += ` (${translateHandName(r.hand)})`;
 					enqueueNotification(msg);
 				} else {
 					enqueueNotification(
-						`${r.players.join(" & ")} split ${r.amount}`,
+						`${r.players.join(" & ")} ${r.amount} 분할`,
 					);
 				}
 			});
@@ -3362,6 +3385,40 @@ function deletePlayer(ev) {
 	const seatEl = ev.currentTarget.closest(".seat");
 	const seatRef = seatRefs.find((currentSeatRef) => currentSeatRef.seatEl === seatEl);
 	renderSeatSetupState(seatRef, { visible: false });
+}
+
+// Between hands, a busted player (chips <= 0) can rebuy to the starting stack instead of being
+// removed from the table on the next hand.
+function updateRebuySeatVisibility() {
+	seatRefs.forEach((seatRef) => {
+		seatRef.rebuyEl?.classList.add("hidden");
+	});
+	if (gameState.handInProgress) {
+		return;
+	}
+	gameState.players.forEach((player) => {
+		if (player.chips > 0) {
+			return;
+		}
+		getSeatRef(player)?.rebuyEl?.classList.remove("hidden");
+	});
+}
+
+function handleRebuyClick(ev) {
+	const seatEl = ev.currentTarget.closest(".seat");
+	const seatRef = seatRefs.find((currentSeatRef) => currentSeatRef.seatEl === seatEl);
+	const player = gameState.players.find((p) => p.seatSlot === seatRef?.seatSlot);
+	if (!player || player.chips > 0) {
+		return;
+	}
+	player.chips = STARTING_STACK;
+	renderPlayerSeat(player);
+	renderPlayerChipStacks();
+	seatRef.rebuyEl?.classList.add("hidden");
+	enqueueNotification(`${player.name} 리바인 (${STARTING_STACK} 칩).`);
+	logFlow("player_rebuy", { name: player.name, chips: STARTING_STACK });
+	queueStateSync();
+	saveCurrentGameSnapshot();
 }
 
 /* --------------------------------------------------------------------------------------------------
@@ -3464,6 +3521,9 @@ function init() {
 	for (const closeButton of closeButtons) {
 		closeButton.addEventListener("click", deletePlayer, false);
 	}
+	for (const rebuyButton of rebuyButtons) {
+		rebuyButton.addEventListener("click", handleRebuyClick, false);
+	}
 
 	const savedGameSnapshot = readSavedGameSnapshot();
 	if (savedGameSnapshot) {
@@ -3499,7 +3559,7 @@ poker.init();
  * - AUTO_RELOAD_ON_SW_UPDATE: reload page once after an update
  -------------------------------------------------------------------------------------------------- */
 const USE_SERVICE_WORKER = true;
-const SERVICE_WORKER_VERSION = "2026-09-13-v1";
+const SERVICE_WORKER_VERSION = "2026-09-19-v2";
 const AUTO_RELOAD_ON_SW_UPDATE = true;
 
 initServiceWorker({

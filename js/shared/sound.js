@@ -9,8 +9,8 @@ MODULE BOUNDARY: Shared Sound
 // callers in humanTurnController.js and its consumers.
 
 const MUTE_STORAGE_KEY = "poker:sound-muted";
-const SOUND_ON_LABEL = "Sound on";
-const SOUND_OFF_LABEL = "Sound off";
+const SOUND_ON_LABEL = "소리 켜짐";
+const SOUND_OFF_LABEL = "소리 꺼짐";
 
 // Low note then high note — kept intentionally simple so it reads as one clear "your turn" cue.
 const TURN_CHIME_NOTES = [

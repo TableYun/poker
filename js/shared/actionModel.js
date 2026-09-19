@@ -48,15 +48,15 @@ export function getEffectiveRaiseCap(gameState, player) {
 
 export function getActionButtonLabel(amount, actionState) {
 	if (amount === 0) {
-		return "Check";
+		return "체크";
 	}
 	if (amount === actionState.maxAmount) {
-		return "All-In";
+		return "올인";
 	}
 	if (amount === actionState.needToCall) {
-		return "Call";
+		return "콜";
 	}
-	return "Raise";
+	return "레이즈";
 }
 
 export function clampActionAmount(amount, actionState) {

@@ -1,6 +1,6 @@
 {
-    "short_name": "Poker",
-    "name": "Poker",
+    "short_name": "포커",
+    "name": "포커",
     "icons": [
         {
             "src": "icons/poker-chip.svg",

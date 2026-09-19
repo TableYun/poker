@@ -178,15 +178,15 @@ function renderDisplayedChipTransferState(target, finalPot, players, chipTransfe
 export function getActionLabelBadgeText(actionName = "") {
 	switch (actionName) {
 		case "fold":
-			return "Fold";
+			return "폴드";
 		case "check":
-			return "Check";
+			return "체크";
 		case "call":
-			return "Call";
+			return "콜";
 		case "raise":
-			return "Raise";
+			return "레이즈";
 		case "allin":
-			return "All-In";
+			return "올인";
 		default:
 			return "";
 	}

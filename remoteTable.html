@@ -5,11 +5,11 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 	<meta name="apple-mobile-web-app-capable" content="yes">
-	<meta name="apple-mobile-web-app-title" content="Poker">
+	<meta name="apple-mobile-web-app-title" content="포커">
 	<meta name="apple-mobile-web-app-status-bar-style" content="black">
 	<meta name="theme-color" content="#2e426b" />
 
-	<title>Remote Table</title>
+	<title>리모트 테이블</title>
 
 	<link rel="apple-touch-icon" href="icons/180x180.png" />
 	<link rel="icon" href="icons/favicon.png" type="image/png" sizes="32x32">
@@ -209,10 +209,72 @@
 				</div>
 			</div>
 		</div>
+		<div class="seat hidden" data-seat-slot="6">
+			<div class="hole-cards">
+				<img class="card" src="cards/1B.svg">
+				<img class="card" src="cards/1B.svg">
+				<img class="blind-icons hidden dealer" src="icons/dealer.svg">
+				<img class="blind-icons hidden small-blind" src="icons/small-blind.svg">
+				<img class="blind-icons hidden big-blind" src="icons/big-blind.svg">
+				<div class="winner-reaction hidden"></div>
+				<div class="pill win-probability hidden"></div>
+				<div class="pill hand-strength hidden"></div>
+			</div>
+			<h3></h3>
+			<div class="chips">
+				<div class="stack-visual">
+					<img src="icons/chip.svg" alt="" style="--stack-index: 0;">
+					<img src="icons/chip.svg" alt="" style="--stack-index: 1;">
+					<img src="icons/chip.svg" alt="" style="--stack-index: 2;">
+					<img src="icons/chip.svg" alt="" style="--stack-index: 3;">
+					<img src="icons/chip.svg" alt="" style="--stack-index: 4;">
+					<img src="icons/chip.svg" alt="" style="--stack-index: 5;">
+					<img src="icons/chip.svg" alt="" style="--stack-index: 6;">
+					<img src="icons/chip.svg" alt="" style="--stack-index: 7;">
+					<img src="icons/chip.svg" alt="" style="--stack-index: 8;">
+					<img src="icons/chip.svg" alt="" style="--stack-index: 9;">
+				</div>
+				<div class="stack-values">
+					<div class="total">0</div>
+					<div class="bet">0</div>
+				</div>
+			</div>
+		</div>
+		<div class="seat hidden" data-seat-slot="7">
+			<div class="hole-cards">
+				<img class="card" src="cards/1B.svg">
+				<img class="card" src="cards/1B.svg">
+				<img class="blind-icons hidden dealer" src="icons/dealer.svg">
+				<img class="blind-icons hidden small-blind" src="icons/small-blind.svg">
+				<img class="blind-icons hidden big-blind" src="icons/big-blind.svg">
+				<div class="winner-reaction hidden"></div>
+				<div class="pill win-probability hidden"></div>
+				<div class="pill hand-strength hidden"></div>
+			</div>
+			<h3></h3>
+			<div class="chips">
+				<div class="stack-visual">
+					<img src="icons/chip.svg" alt="" style="--stack-index: 0;">
+					<img src="icons/chip.svg" alt="" style="--stack-index: 1;">
+					<img src="icons/chip.svg" alt="" style="--stack-index: 2;">
+					<img src="icons/chip.svg" alt="" style="--stack-index: 3;">
+					<img src="icons/chip.svg" alt="" style="--stack-index: 4;">
+					<img src="icons/chip.svg" alt="" style="--stack-index: 5;">
+					<img src="icons/chip.svg" alt="" style="--stack-index: 6;">
+					<img src="icons/chip.svg" alt="" style="--stack-index: 7;">
+					<img src="icons/chip.svg" alt="" style="--stack-index: 8;">
+					<img src="icons/chip.svg" alt="" style="--stack-index: 9;">
+				</div>
+				<div class="stack-values">
+					<div class="total">0</div>
+					<div class="bet">0</div>
+				</div>
+			</div>
+		</div>
 		<div id="table-middle">
 			<section class="infos">
 				<div id="pot">0</div>
-				<div id="notification">Loading table...</div>
+				<div id="notification">테이블 불러오는 중...</div>
 			</section>
 			<section id="community-cards">
 				<div class="cardslot"></div>
@@ -223,10 +285,10 @@
 			</section>
 			<section class="actions">
 				<button type="button" id="fold-button" class="hidden" name="button">
-					Fold
+					폴드
 				</button>
 				<button type="button" id="action-button" class="hidden" name="button">
-					Check
+					체크
 				</button>
 				<div id="amount-controls" class="amount-controls hidden">
 					<button type="button" id="amount-decrement-button" class="amount-step-button"
@@ -236,15 +298,15 @@
 					<button type="button" id="amount-increment-button" class="amount-step-button"
 						name="button">+</button>
 				</div>
-				<a id="remote-switch-link" class="action-link hidden" href="hole-cards.html">switch to companion
-					view</a>
+				<a id="remote-switch-link" class="action-link hidden" href="hole-cards.html">동반 화면으로
+					전환</a>
 			</section>
 		</div>
 	</main>
 	<footer>
 		<div id="credit">
-			<a href="https://github.com/Tehes">made by Tehes</a>
-			<button type="button" id="sound-button" class="sound-toggle">Sound on</button>
+			<a href="https://github.com/Tehes">제작: Tehes</a>
+			<button type="button" id="sound-button" class="sound-toggle">소리 켜짐</button>
 		</div>
 		<div id="social">
 			<a href="https://github.com/Tehes/poker"><img alt="Github-Logo" src="social/github.svg" width="25"

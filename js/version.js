@@ -10,9 +10,20 @@ Version log writing guide:
 - Add optional contributor credits as dedicated metadata instead of release notes.
 */
 
-export const APP_VERSION = "1.5.2";
+export const APP_VERSION = "1.6.0";
 
 export const VERSION_LOG = [
+	{
+		version: "1.6.0",
+		date: "2026-09-19",
+		title: "Bigger tables and rebuys",
+		notes: [
+			"Tables now seat up to 8 players instead of 6, for bigger groups of friends and bots.",
+			"Busted players can rebuy to a fresh stack from their seat between hands instead of being knocked out for good.",
+			"Refreshed seat and table styling for better readability at the table.",
+		],
+		estimated: false,
+	},
 	{
 		version: "1.5.2",
 		date: "2026-08-22",

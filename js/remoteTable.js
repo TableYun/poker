@@ -83,7 +83,7 @@ const STATE_ENDPOINT = "https://poker.tehes.deno.net/state";
 const ACTION_ENDPOINT = "https://poker.tehes.deno.net/action";
 const REFRESH_INTERVAL = 750;
 const ACTION_STEP = 10;
-const DEFAULT_NOTIFICATION = "Waiting for updates...";
+const DEFAULT_NOTIFICATION = "업데이트를 기다리는 중...";
 let lastVersion = 0;
 let pollTimeoutId = null;
 let isPolling = false;
@@ -116,7 +116,7 @@ const actionControls = createSeatActionControls({
 	sliderOutput,
 	decrementButton: amountDecrementButton,
 	incrementButton: amountIncrementButton,
-	onActionError: () => setNotification("Action request failed."),
+	onActionError: () => setNotification("액션 요청이 실패했습니다."),
 	onNewTurn: () => playTurnChime(),
 });
 
@@ -158,7 +158,7 @@ function applyRemoteState(payload) {
 	if (!tableView || !seatView || seatView.seatIndex !== seatIndexParam) {
 		setViewSwitchLinkVisible(remoteSwitchLink, false);
 		actionControls.hide();
-		setNotification("Seat unavailable.");
+		setNotification("좌석을 사용할 수 없습니다.");
 		clearChipTransferAnimation(tableRenderTarget);
 		seatRefs.forEach(clearRenderedSeat);
 		renderCommunityCards(communityCardSlots, []);
@@ -238,12 +238,12 @@ async function pollState() {
 		}
 		setViewSwitchLinkVisible(remoteSwitchLink, false);
 		actionControls.hide();
-		setNotification("Table unavailable.");
+		setNotification("테이블을 사용할 수 없습니다.");
 	} catch (error) {
 		console.warn("state fetch failed", error);
 		setViewSwitchLinkVisible(remoteSwitchLink, false);
 		actionControls.hide();
-		setNotification("Connection lost.");
+		setNotification("연결이 끊겼습니다.");
 	} finally {
 		isPolling = false;
 		schedulePoll();
@@ -288,11 +288,11 @@ function init() {
 	actionControls.hide();
 
 	if (!tableId || seatIndexParam === null) {
-		setNotification("Missing table link.");
+		setNotification("테이블 링크가 없습니다.");
 		return;
 	}
 
-	setNotification("Loading table...");
+	setNotification("테이블 불러오는 중...");
 	pollState();
 }
 

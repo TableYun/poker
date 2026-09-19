@@ -5,11 +5,11 @@
 	<meta charset="utf-8">
 	<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
 	<meta name="apple-mobile-web-app-capable" content="yes">
-	<meta name="apple-mobile-web-app-title" content="Poker">
+	<meta name="apple-mobile-web-app-title" content="포커">
 	<meta name="apple-mobile-web-app-status-bar-style" content="black">
 	<meta name="theme-color" content="#ccc" />
 
-	<title>Hole Cards</title>
+	<title>내 카드</title>
 
 	<link rel="apple-touch-icon" href="icons/180x180.png" />
 	<link rel="shortcut icon" href="icons/favicon.png">
@@ -28,14 +28,14 @@
 			<div class="pill win-probability hidden"></div>
 			<div class="pill hand-strength hidden"></div>
 		</div>
-		<h3>Player Name</h3>
+		<h3>플레이어 이름</h3>
 		<div class="chips"><span class="total">2000</span><span class="bet hidden">0</span><span id="pot"
 				class="hidden">0</span>
 		</div>
 		<div id="single-action-panel" class="hidden">
 			<section class="actions">
-				<button type="button" id="single-fold-button" class="hidden" name="button">Fold</button>
-				<button type="button" id="single-action-button" class="hidden" name="button">Check</button>
+				<button type="button" id="single-fold-button" class="hidden" name="button">폴드</button>
+				<button type="button" id="single-action-button" class="hidden" name="button">체크</button>
 				<div id="single-amount-controls" class="amount-controls hidden">
 					<button type="button" id="single-amount-decrement-button" class="amount-step-button"
 						name="button">-</button>
@@ -44,13 +44,13 @@
 					<button type="button" id="single-amount-increment-button" class="amount-step-button"
 						name="button">+</button>
 				</div>
-				<a id="single-switch-link" class="action-link hidden" href="remoteTable.html">switch to full table
-					view</a>
+				<a id="single-switch-link" class="action-link hidden" href="remoteTable.html">전체 테이블
+					보기로 전환</a>
 			</section>
 		</div>
 		<div id="singleview-notifications" class="hidden">
 		</div>
-		<button type="button" id="sound-button" class="sound-toggle">Sound on</button>
+		<button type="button" id="sound-button" class="sound-toggle">소리 켜짐</button>
 	</div>
 	<script type="module" src="./js/singleView.js"></script>
 </body>
