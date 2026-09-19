@@ -10,9 +10,18 @@ Version log writing guide:
 - Add optional contributor credits as dedicated metadata instead of release notes.
 */
 
-export const APP_VERSION = "1.9.12";
+export const APP_VERSION = "1.9.13";
 
 export const VERSION_LOG = [
+	{
+		version: "1.9.13",
+		date: "2026-09-19",
+		title: "동기화 서버 이전",
+		notes: [
+			"멀티플레이 동기화 서버를 Cloudflare(poker-sync.tableyun.workers.dev)로 옮겼습니다. 무료 한도가 하루 10만 요청으로 넉넉해져 원격 플레이가 안정적으로 유지됩니다.",
+		],
+		estimated: false,
+	},
 	{
 		version: "1.9.12",
 		date: "2026-09-19",

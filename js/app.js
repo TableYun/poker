@@ -254,8 +254,8 @@ if (SPEED_MODE) {
 	DEBUG_FLOW = true;
 }
 
-const STATE_SYNC_ENDPOINT = "https://poker.tableyun.deno.net/state";
-const ACTION_SYNC_ENDPOINT = "https://poker.tableyun.deno.net/action";
+const STATE_SYNC_ENDPOINT = "https://poker-sync.tableyun.workers.dev/state";
+const ACTION_SYNC_ENDPOINT = "https://poker-sync.tableyun.workers.dev/action";
 let tableId = null;
 const STATE_SYNC_DELAY = 750;
 const ACTION_POLL_INTERVAL = 1000;

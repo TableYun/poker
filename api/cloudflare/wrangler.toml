@@ -1,0 +1,11 @@
+name = "poker-sync"
+main = "main.js"
+compatibility_date = "2026-09-01"
+
+[[durable_objects.bindings]]
+name = "POKER_TABLE"
+class_name = "PokerTable"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["PokerTable"]
