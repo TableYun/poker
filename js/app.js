@@ -2156,10 +2156,22 @@ async function fetchPendingRemoteAction(turnToken) {
 }
 
 async function sendTableState() {
-	const payload = {
-		tableId: tableId,
-		view: buildSyncView(gameState, notifArr.slice(0, MAX_ITEMS)),
-	};
+	// Building the payload happens inside its own guard: an exception here (e.g. a hand
+	// evaluation blowing up on one player's cards) used to escape the retry chain and
+	// silently kill state sync for the rest of the game - remote views froze while the
+	// host looked fine.
+	let payload;
+	try {
+		payload = {
+			tableId: tableId,
+			view: buildSyncView(gameState, notifArr.slice(0, MAX_ITEMS)),
+		};
+	} catch (error) {
+		console.error("state sync payload build failed", error);
+		logFlow("state sync build failed", error);
+		queueStateSync(3000);
+		return;
+	}
 
 	try {
 		const res = await fetch(STATE_SYNC_ENDPOINT, {

@@ -163,10 +163,10 @@ export function buildPublicPlayerView(player, communityCards, gameState, now = D
 			(forceShowdownHoleCards || player.visibleHoleCards[index]) ? cardCode : null
 		),
 		handStrengthLabel: shouldShowTableHandStrength(player, communityCards, gameState)
-			? getPlayerHandStrengthLabel(player, communityCards)
+			? getLabelSafely(() => getPlayerHandStrengthLabel(player, communityCards))
 			: "",
 		outsLabel: shouldShowTableHandStrength(player, communityCards, gameState)
-			? getPlayerOutsLabel(player, communityCards)
+			? getLabelSafely(() => getPlayerOutsLabel(player, communityCards))
 			: "",
 		winProbability: player.winProbability,
 		showWinProbability: shouldShowTableWinProbability(player, gameState),
@@ -174,6 +174,17 @@ export function buildPublicPlayerView(player, communityCards, gameState, now = D
 		actionState: getLivePlayerActionState(player.actionState, now),
 		winnerReaction: getLivePlayerWinnerReactionState(player, now),
 	};
+}
+
+// A hand or outs evaluation must never take down the whole sync payload - one bad
+// evaluation for one seat degrades to a blank label instead.
+function getLabelSafely(compute) {
+	try {
+		return compute();
+	} catch (error) {
+		console.error("hand label computation failed", error);
+		return "";
+	}
 }
 
 export function buildSeatView(player, communityCards, gameState) {
@@ -187,10 +198,10 @@ export function buildSeatView(player, communityCards, gameState) {
 		allIn: player.allIn,
 		holeCards: player.holeCards.slice(),
 		handStrengthLabel: shouldShowSeatHandStrength(player, communityCards, gameState)
-			? getPlayerHandStrengthLabel(player, communityCards)
+			? getLabelSafely(() => getPlayerHandStrengthLabel(player, communityCards))
 			: "",
 		outsLabel: shouldShowSeatHandStrength(player, communityCards, gameState)
-			? getPlayerOutsLabel(player, communityCards)
+			? getLabelSafely(() => getPlayerOutsLabel(player, communityCards))
 			: "",
 		winProbability: player.winProbability,
 		showWinProbability: shouldShowSeatWinProbability(player, gameState),

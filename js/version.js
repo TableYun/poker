@@ -10,9 +10,18 @@ Version log writing guide:
 - Add optional contributor credits as dedicated metadata instead of release notes.
 */
 
-export const APP_VERSION = "1.9.18";
+export const APP_VERSION = "1.9.19";
 
 export const VERSION_LOG = [
+	{
+		version: "1.9.19",
+		date: "2026-09-19",
+		title: "원격 동기화 멈춤 근본 수정",
+		notes: [
+			"특정 상황에서 호스트의 상태 전송이 조용히 멈춰 원격 화면들이 이전 턴에 얼어붙던 문제를 고쳤습니다. 이제 어떤 계산 오류가 나도 동기화는 계속되고, 문제 좌석의 족보 표시만 잠시 비웁니다.",
+		],
+		estimated: false,
+	},
 	{
 		version: "1.9.18",
 		date: "2026-09-19",
