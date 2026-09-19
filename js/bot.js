@@ -69,7 +69,7 @@ import { getPlayerActionState } from "./shared/actionModel.js";
 ========================== */
 // Configuration constants
 // Delay in milliseconds between enqueued bot actions
-export let BOT_ACTION_DELAY = 3000;
+export let BOT_ACTION_DELAY = 1500;
 const FAST_FORWARD_BOT_ACTION_DELAY = 140;
 const RANK_ORDER = "23456789TJQKA";
 

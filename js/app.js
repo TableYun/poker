@@ -210,19 +210,19 @@ const notifArr = [];
 const pendingNotif = [];
 let isNotifProcessing = false;
 let notifTimer = null;
-const DEFAULT_NOTIF_INTERVAL = 750;
+const DEFAULT_NOTIF_INTERVAL = 375;
 let NOTIF_INTERVAL = DEFAULT_NOTIF_INTERVAL;
 const FAST_FORWARD_NOTIF_INTERVAL = 0;
-const DEFAULT_ACTION_LABEL_DURATION = 3000;
+const DEFAULT_ACTION_LABEL_DURATION = 1500;
 let ACTION_LABEL_DURATION = DEFAULT_ACTION_LABEL_DURATION;
 const FAST_FORWARD_ACTION_LABEL_DURATION = 180;
-const DEFAULT_RUNOUT_PHASE_DELAY = 3000;
+const DEFAULT_RUNOUT_PHASE_DELAY = 1500;
 let RUNOUT_PHASE_DELAY = DEFAULT_RUNOUT_PHASE_DELAY;
 const FAST_FORWARD_RUNOUT_PHASE_DELAY = 320;
 const FAST_FORWARD_CHIP_TRANSFER_DURATION = 160;
 const FAST_FORWARD_CHIP_TRANSFER_STEPS = 8;
 const DEFAULT_CHIP_TRANSFER_STEPS = 30;
-const WINNER_REACTION_DURATION = 2000;
+const WINNER_REACTION_DURATION = 1000;
 const DEFAULT_NEW_ROUND_COUNTDOWN_SECONDS = 5;
 const MIN_NEW_ROUND_COUNTDOWN_SECONDS = 3;
 const MAX_NEW_ROUND_COUNTDOWN_SECONDS = 60;
@@ -3233,7 +3233,7 @@ function getChipTransferDurationMs(amount) {
 	if (isTurboPlaybackActive()) {
 		return FAST_FORWARD_CHIP_TRANSFER_DURATION;
 	}
-	return Math.min(Math.max(amount * 20, 300), 3000);
+	return Math.min(Math.max(amount * 10, 150), 1500);
 }
 
 function buildChipTransferState(transferQueue) {
@@ -3703,7 +3703,7 @@ poker.init();
  * - AUTO_RELOAD_ON_SW_UPDATE: reload page once after an update
  -------------------------------------------------------------------------------------------------- */
 const USE_SERVICE_WORKER = true;
-const SERVICE_WORKER_VERSION = "2026-09-19-v10";
+const SERVICE_WORKER_VERSION = "2026-09-19-v11";
 const AUTO_RELOAD_ON_SW_UPDATE = true;
 
 initServiceWorker({

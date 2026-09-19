@@ -10,9 +10,18 @@ Version log writing guide:
 - Add optional contributor credits as dedicated metadata instead of release notes.
 */
 
-export const APP_VERSION = "1.9.1";
+export const APP_VERSION = "1.9.2";
 
 export const VERSION_LOG = [
+	{
+		version: "1.9.2",
+		date: "2026-09-19",
+		title: "진행 속도 2배 업",
+		notes: [
+			"봇이 생각하는 시간, 알림 표시 속도, 커뮤니티 카드 공개 간격, 칩 이동 애니메이션을 모두 절반으로 줄여 게임이 훨씬 빠르게 진행됩니다.",
+		],
+		estimated: false,
+	},
 	{
 		version: "1.9.1",
 		date: "2026-09-19",
