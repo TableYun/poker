@@ -1856,3 +1856,8 @@ Chat panel (bottom-left on the host table and remote views)
     padding: 10px 20px;
     font-size: 1.05rem;
 }
+
+/* Crown for the current sole chip leader. */
+main .seat.chip-leader h3::before {
+    content: "👑 ";
+}

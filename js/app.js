@@ -1355,10 +1355,15 @@ function buildPlayerSeatState(
 		? `${Math.round(publicPlayerView.winProbability)}%`
 		: "";
 
+	const seatedChips = gameState.players.map((p) => p.chips);
+	const maxChips = Math.max(0, ...seatedChips);
 	return {
 		name: publicPlayerView.name,
 		chips: publicPlayerView.chips,
 		roundBet: publicPlayerView.roundBet,
+		// Crown for the sole chip leader; ties (like the even stacks at the start) show none.
+		chipLeader: maxChips > 0 && player.chips === maxChips &&
+			seatedChips.filter((chips) => chips === maxChips).length === 1,
 		isHuman: player.isBot !== true,
 		visibleCardCodes: publicPlayerView.publicHoleCards,
 		dealer: publicPlayerView.dealer,

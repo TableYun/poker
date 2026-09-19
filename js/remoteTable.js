@@ -196,6 +196,23 @@ function updatePreFold(seatView, showTurnControls) {
 	preFoldButton.textContent = preFoldArmed ? "폴드 예약됨 - 취소하려면 누르세요" : "폴드 예약";
 }
 
+// The sole chip leader's seat gets a crown; ties show none.
+function getUniqueChipLeaderSeatIndex(playersPublic) {
+	let maxChips = 0;
+	let leaderSeatIndex = null;
+	let leadersAtMax = 0;
+	playersPublic.forEach((publicSeat) => {
+		if (publicSeat.chips > maxChips) {
+			maxChips = publicSeat.chips;
+			leaderSeatIndex = publicSeat.seatIndex;
+			leadersAtMax = 1;
+		} else if (publicSeat.chips === maxChips && maxChips > 0) {
+			leadersAtMax += 1;
+		}
+	});
+	return leadersAtMax === 1 ? leaderSeatIndex : null;
+}
+
 function applyRemoteState(payload) {
 	const tableView = getTableView(payload);
 	const seatView = getSeatView(payload);
@@ -217,6 +234,7 @@ function applyRemoteState(payload) {
 	const showTurnControls = shouldShowSeatActionControls(seatView, pendingAction, seatIndexParam);
 	const playersPublic = Array.isArray(tableView.playersPublic) ? tableView.playersPublic : [];
 	const ownSeatSlot = typeof seatView.seatSlot === "number" ? seatView.seatSlot : null;
+	const chipLeaderSeatIndex = getUniqueChipLeaderSeatIndex(playersPublic);
 	seatRefs.forEach(clearRenderedSeat);
 	playersPublic.forEach((publicSeat) => {
 		const seatRef = findSeatRef(publicSeat);
@@ -233,6 +251,7 @@ function applyRemoteState(payload) {
 			activeSeatIndex: tableView.activeSeatIndex,
 			ownSeatIndex: seatIndexParam,
 			ownSeatView: seatView,
+			chipLeaderSeatIndex,
 		});
 		renderSeatActionLabel(seatRef, {
 			playerName: publicSeat.name,

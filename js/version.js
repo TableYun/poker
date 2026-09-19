@@ -10,9 +10,18 @@ Version log writing guide:
 - Add optional contributor credits as dedicated metadata instead of release notes.
 */
 
-export const APP_VERSION = "1.9.28";
+export const APP_VERSION = "1.9.29";
 
 export const VERSION_LOG = [
+	{
+		version: "1.9.29",
+		date: "2026-09-20",
+		title: "칩리더 왕관",
+		notes: [
+			"현재 칩이 가장 많은 플레이어의 이름 옆에 왕관(👑)이 표시됩니다. 동률일 때는 표시되지 않으며, 핸드가 끝나 칩이 정산될 때마다 갱신됩니다.",
+		],
+		estimated: false,
+	},
 	{
 		version: "1.9.28",
 		date: "2026-09-20",

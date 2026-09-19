@@ -602,6 +602,7 @@ export function clearRenderedSeat(seatRef) {
 		"active",
 		"own-seat",
 		"revealed",
+		"chip-leader",
 		"folded",
 		"checked",
 		"called",
@@ -634,6 +635,7 @@ export function renderHostSeat(seatRef, seatState = {}) {
 	seatRef.bigBlindEl.classList.toggle("hidden", seatState.bigBlind !== true);
 	// Human seats reuse the remote view's "own-seat" styling: spread, full-brightness hole cards.
 	seatRef.seatEl.classList.toggle("own-seat", seatState.isHuman === true);
+	seatRef.seatEl.classList.toggle("chip-leader", seatState.chipLeader === true);
 	renderSeatActiveState(seatRef, seatState.active === true);
 	renderSeatCards(seatRef.cardEls, seatState.visibleCardCodes);
 	renderSeatRevealedState(seatRef, seatState.visibleCardCodes);
@@ -659,7 +661,7 @@ export function renderHostSeat(seatRef, seatState = {}) {
 export function renderProjectedSeat(
 	seatRef,
 	publicSeat,
-	{ activeSeatIndex = null, ownSeatIndex = null, ownSeatView = null } = {},
+	{ activeSeatIndex = null, ownSeatIndex = null, ownSeatView = null, chipLeaderSeatIndex = null } = {},
 ) {
 	const isOwnSeat = publicSeat.seatIndex === ownSeatIndex && Boolean(ownSeatView);
 	const holeCards = isOwnSeat ? ownSeatView.holeCards : publicSeat.publicHoleCards;
@@ -680,6 +682,10 @@ export function renderProjectedSeat(
 	// pulled-together fold styling is a shared-table cue for everyone else, not for the player
 	// looking at their own private view.
 	seatRef.seatEl.classList.toggle("own-seat", isOwnSeat === true);
+	seatRef.seatEl.classList.toggle(
+		"chip-leader",
+		chipLeaderSeatIndex !== null && publicSeat.seatIndex === chipLeaderSeatIndex,
+	);
 	renderSeatWinnerState(seatRef, publicSeat.winner === true);
 	seatRef.nameEl.textContent = publicSeat.name;
 	seatRef.totalEl.textContent = `${publicSeat.chips}`;
