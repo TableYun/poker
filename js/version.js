@@ -10,9 +10,18 @@ Version log writing guide:
 - Add optional contributor credits as dedicated metadata instead of release notes.
 */
 
-export const APP_VERSION = "1.9.29";
+export const APP_VERSION = "1.9.30";
 
 export const VERSION_LOG = [
+	{
+		version: "1.9.30",
+		date: "2026-09-20",
+		title: "채팅창 크기 조정",
+		notes: [
+			"채팅창이 카드를 가리지 않도록 적당한 크기로 조정했습니다.",
+		],
+		estimated: false,
+	},
 	{
 		version: "1.9.29",
 		date: "2026-09-20",

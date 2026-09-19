@@ -1798,7 +1798,7 @@ Chat panel (bottom-left on the host table and remote views)
     position: fixed;
     left: 12px;
     bottom: 12px;
-    width: min(460px, 92vw);
+    width: min(330px, 58vw);
     z-index: 3000;
     background: hsla(221, 39%, 14%, 0.88);
     border-radius: 14px;
@@ -1807,14 +1807,14 @@ Chat panel (bottom-left on the host table and remote views)
 }
 
 .chat-messages {
-    max-height: min(320px, 40vh);
+    max-height: min(170px, 22vh);
     overflow-y: auto;
     display: flex;
     flex-direction: column;
     gap: 5px;
     margin-bottom: 8px;
-    font-size: 1.15rem;
-    line-height: 1.4;
+    font-size: 0.95rem;
+    line-height: 1.35;
     text-align: left;
     overflow-wrap: anywhere;
 }
@@ -1838,12 +1838,12 @@ Chat panel (bottom-left on the host table and remote views)
     flex: 1 1 auto;
     min-width: 0;
     border: none;
-    border-radius: 12px;
-    padding: 11px 14px;
+    border-radius: 10px;
+    padding: 7px 11px;
     background: var(--blue);
     color: var(--font-color);
     font-family: inherit;
-    font-size: 1.1rem;
+    font-size: 0.95rem;
 }
 
 .chat-form input:focus {
@@ -1853,8 +1853,8 @@ Chat panel (bottom-left on the host table and remote views)
 .chat-form button {
     width: auto;
     margin: 0;
-    padding: 10px 20px;
-    font-size: 1.05rem;
+    padding: 6px 14px;
+    font-size: 0.9rem;
 }
 
 /* Crown for the current sole chip leader. */
