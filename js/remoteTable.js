@@ -296,6 +296,8 @@ function init() {
 		return;
 	}
 
+	// The remote view always belongs to one player: focus the layout on their seat.
+	document.querySelector("main")?.classList.add("own-focus");
 	setNotification("테이블 불러오는 중...");
 	pollState();
 }

@@ -10,9 +10,18 @@ Version log writing guide:
 - Add optional contributor credits as dedicated metadata instead of release notes.
 */
 
-export const APP_VERSION = "1.9.8";
+export const APP_VERSION = "1.9.9";
 
 export const VERSION_LOG = [
+	{
+		version: "1.9.9",
+		date: "2026-09-19",
+		title: "내 자리 중심 레이아웃",
+		notes: [
+			"혼자 플레이하거나 원격 링크로 참가하면 내 카드가 화면 아래 중앙에 크게 나오고, 다른 참가자들은 위쪽에 작게 일렬로 배치됩니다.",
+		],
+		estimated: false,
+	},
 	{
 		version: "1.9.8",
 		date: "2026-09-19",

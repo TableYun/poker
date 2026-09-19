@@ -1249,6 +1249,92 @@ main .seat.revealed.folded .hole-cards img:nth-of-type(2) {
     transform: rotate(3deg);
 }
 
+/* --------------------------------------------------------------------------------------------------
+Own-focus layout: solo games and the remote view keep the player's own seat large at the
+bottom center while every other seat lines up small along the top.
+-------------------------------------------------------------------------------------------------- */
+
+main.own-focus {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    grid-template-rows: minmax(0, 0.85fr) minmax(0, 1.6fr) minmax(0, 1.15fr);
+}
+
+main.own-focus .seat:not(.own-seat) {
+    grid-area: auto;
+    grid-row: 1;
+    width: 14vmin;
+}
+
+main.own-focus #table-middle {
+    grid-area: 2 / 1 / 3 / -1;
+}
+
+main.own-focus .seat.own-seat {
+    grid-area: 3 / 1 / 4 / -1;
+    justify-self: center;
+}
+
+main.own-focus .seat:not(.own-seat) .hole-cards img {
+    width: 5.8vmin;
+}
+
+main.own-focus .seat:not(.own-seat) h3 {
+    font-size: 0.7em;
+    padding: 0.3vmin 1.2vmin;
+}
+
+main.own-focus .seat:not(.own-seat) .chips .stack-visual,
+main.own-focus .seat:not(.own-seat) .chips .stack-visual img {
+    width: max(3vmin, 22px);
+    height: max(3vmin, 22px);
+}
+
+main.own-focus .seat:not(.own-seat) .chips .stack-values {
+    font-size: 0.75em;
+}
+
+main.own-focus .seat:not(.own-seat) .hole-cards .blind-icons {
+    width: 3.5vmin;
+    min-width: 24px;
+}
+
+main.own-focus .seat:not(.own-seat) .hole-cards .close,
+main.own-focus .seat:not(.own-seat) .hole-cards .rotate {
+    width: 3vmin;
+    min-width: 22px;
+    padding: 4px;
+}
+
+main.own-focus .seat:not(.own-seat) .rebuy,
+main.own-focus .seat:not(.own-seat) .away {
+    font-size: 0.6rem;
+}
+
+main.own-focus .seat:not(.own-seat) .pill {
+    font-size: 0.55rem;
+    padding: 1px 5px;
+}
+
+@media (max-width: 900px) {
+    main.own-focus {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        grid-template-rows: auto auto minmax(0, 1.6fr) minmax(0, 1.2fr);
+    }
+
+    main.own-focus .seat:not(.own-seat) {
+        grid-row: auto;
+        width: 20vmin;
+    }
+
+    main.own-focus #table-middle {
+        grid-area: 3 / 1 / 4 / -1;
+    }
+
+    main.own-focus .seat.own-seat {
+        grid-area: 4 / 1 / 5 / -1;
+    }
+}
+
 .hole-cards .qr {
     display: flex;
     flex-direction: column;

@@ -105,6 +105,7 @@ const rotateIcons = document.querySelectorAll(".seat .rotate");
 const closeButtons = document.querySelectorAll(".close");
 const rebuyButtons = document.querySelectorAll(".rebuy");
 const awayButtons = document.querySelectorAll(".away");
+const tableMainEl = document.querySelector("main");
 const notification = document.querySelector("#notification");
 const foldButton = document.querySelector("#fold-button");
 const actionButton = document.querySelector("#action-button");
@@ -3750,6 +3751,13 @@ function updateRebuySeatVisibility() {
 // on human seats, and the between-hands kick (X) control on bot seats.
 function updateSeatManagementControls() {
 	updateRebuySeatVisibility();
+	// Solo games focus the layout on the single human: their seat sits large at the
+	// bottom center while the bots line up small along the top.
+	const humanCount = gameState.allPlayers.filter((p) => p.isBot !== true).length;
+	tableMainEl?.classList.toggle(
+		"own-focus",
+		gameState.gameStarted === true && humanCount === 1,
+	);
 	seatRefs.forEach((seatRef) => {
 		seatRef.awayEl?.classList.add("hidden");
 	});
