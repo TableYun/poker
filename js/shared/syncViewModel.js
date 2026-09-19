@@ -13,6 +13,7 @@ import {
 	areHoleCardsFaceUp,
 	getCurrentPhase,
 	getPlayerHandStrengthLabel,
+	getPlayerOutsLabel,
 	isAllInRunout,
 } from "../gameEngine.js";
 
@@ -164,6 +165,9 @@ export function buildPublicPlayerView(player, communityCards, gameState, now = D
 		handStrengthLabel: shouldShowTableHandStrength(player, communityCards, gameState)
 			? getPlayerHandStrengthLabel(player, communityCards)
 			: "",
+		outsLabel: shouldShowTableHandStrength(player, communityCards, gameState)
+			? getPlayerOutsLabel(player, communityCards, gameState.deck)
+			: "",
 		winProbability: player.winProbability,
 		showWinProbability: shouldShowTableWinProbability(player, gameState),
 		winner: player.isWinner === true,
@@ -184,6 +188,9 @@ export function buildSeatView(player, communityCards, gameState) {
 		holeCards: player.holeCards.slice(),
 		handStrengthLabel: shouldShowSeatHandStrength(player, communityCards, gameState)
 			? getPlayerHandStrengthLabel(player, communityCards)
+			: "",
+		outsLabel: shouldShowSeatHandStrength(player, communityCards, gameState)
+			? getPlayerOutsLabel(player, communityCards, gameState.deck)
 			: "",
 		winProbability: player.winProbability,
 		showWinProbability: shouldShowSeatWinProbability(player, gameState),

@@ -37,6 +37,7 @@ const betEl = document.querySelector(".bet");
 const potEl = document.querySelector("#pot");
 const notificationsEl = document.querySelector("#singleview-notifications");
 const handStrengthEl = document.querySelector("#single .hand-strength");
+const outsEl = document.querySelector("#single .outs");
 const winProbabilityEl = document.querySelector("#single .win-probability");
 const singleActionPanelEl = document.getElementById("single-action-panel");
 const singleFoldButton = document.getElementById("single-fold-button");
@@ -183,6 +184,7 @@ function setOnlineElementsVisible(isOnline) {
 
 function clearSyncedDisplays() {
 	renderHandStrength("");
+	renderOuts("");
 	renderWinProbability(null, false);
 }
 
@@ -202,6 +204,14 @@ function renderHandStrength(label) {
 	}
 	handStrengthEl.textContent = label || "";
 	handStrengthEl.classList.toggle("hidden", !label);
+}
+
+function renderOuts(label) {
+	if (!outsEl) {
+		return;
+	}
+	outsEl.textContent = label || "";
+	outsEl.classList.toggle("hidden", !label);
 }
 
 function renderWinProbability(value, shouldShow) {
@@ -289,6 +299,7 @@ function applyRemoteState(payload) {
 	// Display values are prepared by the table before syncing.
 	// The single view only applies them and does not compute odds or hand labels itself.
 	renderHandStrength(seatView.handStrengthLabel || "");
+	renderOuts(seatView.outsLabel || "");
 	renderWinProbability(seatView.winProbability, seatView.showWinProbability === true);
 	actionControls.render(seatView, pendingAction);
 	setViewSwitchLinkVisible(singleSwitchLink, !showTurnControls);

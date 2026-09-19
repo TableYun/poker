@@ -163,6 +163,7 @@ const seatRefs = Array.from(document.querySelectorAll(".seat")).map((
 	rebuyEl: seatEl.querySelector(".rebuy"),
 	winProbabilityEl: seatEl.querySelector(".win-probability"),
 	handStrengthEl: seatEl.querySelector(".hand-strength"),
+	outsEl: seatEl.querySelector(".outs"),
 	cardEls: seatEl.querySelectorAll(".card"),
 	qrContainer: seatEl.querySelector(".qr"),
 	qrLink: seatEl.querySelector(".qr-link"),
@@ -1167,6 +1168,7 @@ function buildPlayerSeatState(
 		active: gameState.activeSeatIndex === player.seatIndex,
 		winner: publicPlayerView.winner,
 		handStrengthLabel: publicPlayerView.handStrengthLabel,
+		outsLabel: publicPlayerView.outsLabel,
 		winProbabilityLabel,
 		actionState: publicPlayerView.actionState,
 		winnerReaction: publicPlayerView.winnerReaction,
@@ -3559,7 +3561,7 @@ poker.init();
  * - AUTO_RELOAD_ON_SW_UPDATE: reload page once after an update
  -------------------------------------------------------------------------------------------------- */
 const USE_SERVICE_WORKER = true;
-const SERVICE_WORKER_VERSION = "2026-09-19-v2";
+const SERVICE_WORKER_VERSION = "2026-09-19-v4";
 const AUTO_RELOAD_ON_SW_UPDATE = true;
 
 initServiceWorker({

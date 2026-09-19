@@ -72,6 +72,7 @@ const seatRefs = Array.from(document.querySelectorAll(".seat")).map((seatEl, sea
 	bigBlindEl: seatEl.querySelector(".big-blind"),
 	winProbabilityEl: seatEl.querySelector(".win-probability"),
 	handStrengthEl: seatEl.querySelector(".hand-strength"),
+	outsEl: seatEl.querySelector(".outs"),
 	actionLabelTimer: null,
 	winnerReactionEl: seatEl.querySelector(".winner-reaction"),
 	winnerReactionTimer: null,

@@ -10,17 +10,27 @@ Version log writing guide:
 - Add optional contributor credits as dedicated metadata instead of release notes.
 */
 
-export const APP_VERSION = "1.6.0";
+export const APP_VERSION = "1.7.0";
 
 export const VERSION_LOG = [
 	{
+		version: "1.7.0",
+		date: "2026-09-19",
+		title: "아웃 표시 추가",
+		notes: [
+			"플랍이나 턴에서 스트레이트 이상을 완성하지 못한 핸드는 남은 카드로 완성할 확률과 필요한 카드를 보여주는 노란색 “아웃” 표시가 뜹니다.",
+			"이미 스트레이트 이상을 만들었거나 리버에서는 표시되지 않습니다.",
+		],
+		estimated: false,
+	},
+	{
 		version: "1.6.0",
 		date: "2026-09-19",
-		title: "Bigger tables and rebuys",
+		title: "테이블 확장과 리바인",
 		notes: [
-			"Tables now seat up to 8 players instead of 6, for bigger groups of friends and bots.",
-			"Busted players can rebuy to a fresh stack from their seat between hands instead of being knocked out for good.",
-			"Refreshed seat and table styling for better readability at the table.",
+			"테이블 좌석이 6명에서 8명까지 늘어나 더 많은 친구와 봇이 함께할 수 있습니다.",
+			"파산한 플레이어는 핸드 사이에 좌석에서 새 스택으로 리바인해 계속 참여할 수 있습니다.",
+			"좌석과 테이블 스타일을 다듬어 가독성을 높였습니다.",
 		],
 		estimated: false,
 	},

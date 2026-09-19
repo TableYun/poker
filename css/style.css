@@ -1277,11 +1277,21 @@ main .seat.folded .hole-cards img:nth-of-type(2) {
     bottom: 10px;
 }
 
+.outs {
+    top: 0px;
+    left: 0px;
+    background-color: var(--yellow);
+}
+
 .folded .win-probability {
     transform: translateX(-3.5vmin);
 }
 
 .folded .hand-strength {
+    transform: translateX(3.5vmin);
+}
+
+.folded .outs {
     transform: translateX(3.5vmin);
 }
 

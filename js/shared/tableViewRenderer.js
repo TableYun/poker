@@ -610,6 +610,7 @@ export function renderHostSeat(seatRef, seatState = {}) {
 	renderSeatActiveState(seatRef, seatState.active === true);
 	renderSeatCards(seatRef.cardEls, seatState.visibleCardCodes);
 	renderSeatPill(seatRef.handStrengthEl, seatState.handStrengthLabel || "");
+	renderSeatPill(seatRef.outsEl, seatState.outsLabel || "");
 	renderSeatPill(seatRef.winProbabilityEl, seatState.winProbabilityLabel || "");
 	renderSeatWinnerState(seatRef, seatState.winner === true);
 	renderSeatResolvedAction(seatRef, {
@@ -637,6 +638,7 @@ export function renderProjectedSeat(
 	const handStrengthLabel = isOwnSeat
 		? ownSeatView.handStrengthLabel
 		: publicSeat.handStrengthLabel;
+	const outsLabel = isOwnSeat ? ownSeatView.outsLabel : publicSeat.outsLabel;
 	const showWinProbability = isOwnSeat
 		? ownSeatView.showWinProbability === true
 		: publicSeat.showWinProbability === true;
@@ -655,6 +657,7 @@ export function renderProjectedSeat(
 	seatRef.bigBlindEl.classList.toggle("hidden", publicSeat.bigBlind !== true);
 	renderSeatCards(seatRef.cardEls, holeCards);
 	renderSeatPill(seatRef.handStrengthEl, handStrengthLabel);
+	renderSeatPill(seatRef.outsEl, outsLabel || "");
 	renderSeatPill(
 		seatRef.winProbabilityEl,
 		showWinProbability && typeof winProbability === "number"

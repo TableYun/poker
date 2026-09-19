@@ -51,6 +51,21 @@ const BOT_DOUBLE_REVEAL_HANDS = new Set(["Straight Flush", "Four of a Kind", "Fu
 const CARD_RANK_ORDER = "23456789TJQKA";
 const MAX_WIN_PROBABILITY_BOARDS = 50000;
 const NICE_BIG_BLIND_FACTORS = [1, 1.2, 1.4, 1.5, 1.6, 1.8, 2, 2.4, 2.5, 3, 4, 5, 6, 8];
+export const CARD_SUIT_SYMBOLS = { C: "♣", D: "♦", H: "♥", S: "♠" };
+// pokersolver hand names, worst to best. Used to test whether a hand meets a "Straight or better"
+// threshold for outs display without depending on pokersolver's internal numeric rank.
+const HAND_RANK_ORDER = [
+	"High Card",
+	"Pair",
+	"Two Pair",
+	"Three of a Kind",
+	"Straight",
+	"Flush",
+	"Full House",
+	"Four of a Kind",
+	"Straight Flush",
+];
+const STRAIGHT_RANK_INDEX = HAND_RANK_ORDER.indexOf("Straight");
 
 export function shuffleArray(array) {
 	let i = array.length;
@@ -880,6 +895,63 @@ export function getPlayerHandStrengthLabel(player, communityCards) {
 		return "";
 	}
 	return getShortHandStrengthLabel(solvedHand);
+}
+
+function isStraightOrBetter(solvedHand) {
+	return HAND_RANK_ORDER.indexOf(solvedHand.name) >= STRAIGHT_RANK_INDEX;
+}
+
+// Outs are remaining deck cards that would complete at least a Straight if they land on a later
+// street. Only meaningful with the flop or turn on board; preflop has no board to draw against and
+// the river has no more cards to come.
+export function getOutsToStraightOrBetter(player, communityCards, deck) {
+	if (!player.holeCards.every(Boolean)) {
+		return null;
+	}
+	if (communityCards.length !== 3 && communityCards.length !== 4) {
+		return null;
+	}
+
+	const currentHand = Hand.solve([...player.holeCards, ...communityCards]);
+	if (isStraightOrBetter(currentHand)) {
+		return null;
+	}
+
+	const outCards = deck.filter((cardCode) =>
+		isStraightOrBetter(Hand.solve([...player.holeCards, ...communityCards, cardCode]))
+	);
+
+	const unseen = deck.length;
+	const outs = outCards.length;
+	if (outs === 0 || unseen === 0) {
+		return { outs, outCards, percentage: 0 };
+	}
+
+	// Two streets remain on the flop, one on the turn. Exact probability of hitting at least one
+	// out among the remaining cards to come, not the "rule of 4" approximation.
+	const cardsToCome = 5 - communityCards.length;
+	const percentage = cardsToCome === 1
+		? (outs / unseen) * 100
+		: (1 - combinationCount(unseen - outs, cardsToCome) / combinationCount(unseen, cardsToCome)) * 100;
+
+	return { outs, outCards, percentage };
+}
+
+export function getPlayerOutsLabel(player, communityCards, deck) {
+	const outsInfo = getOutsToStraightOrBetter(player, communityCards, deck);
+	if (!outsInfo || outsInfo.outs === 0) {
+		return "";
+	}
+
+	const suits = new Set(outsInfo.outCards.map((cardCode) => cardCode[1]));
+	const which = suits.size === 1
+		? (CARD_SUIT_SYMBOLS[[...suits][0]] ?? [...suits][0])
+		: Array.from(new Set(outsInfo.outCards.map((cardCode) => cardCode[0])))
+			.sort((a, b) => CARD_RANK_ORDER.indexOf(a) - CARD_RANK_ORDER.indexOf(b))
+			.map((rank) => rank === "T" ? "10" : rank)
+			.join(",");
+
+	return `아웃 ${outsInfo.outs}장(${which}) · ${Math.round(outsInfo.percentage)}%`;
 }
 
 export function getBotRevealDecision(player, communityCards, randomValue = Math.random()) {
