@@ -10,9 +10,18 @@ Version log writing guide:
 - Add optional contributor credits as dedicated metadata instead of release notes.
 */
 
-export const APP_VERSION = "1.9.21";
+export const APP_VERSION = "1.9.22";
 
 export const VERSION_LOG = [
+	{
+		version: "1.9.22",
+		date: "2026-09-19",
+		title: "내 기준으로 좌석 배치",
+		notes: [
+			"원격 화면과 혼자 플레이 화면에서 위쪽 좌석들이 실제 턴 순서대로 배치됩니다. 왼쪽 끝이 내 다음 차례, 오른쪽 끝이 내 직전 차례라 진행 흐름을 한눈에 읽을 수 있습니다.",
+		],
+		estimated: false,
+	},
 	{
 		version: "1.9.21",
 		date: "2026-09-19",

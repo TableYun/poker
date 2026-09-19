@@ -175,6 +175,7 @@ function applyRemoteState(payload) {
 	const pendingAction = getSeatPendingAction(tableView, seatIndexParam);
 	const showTurnControls = shouldShowSeatActionControls(seatView, pendingAction, seatIndexParam);
 	const playersPublic = Array.isArray(tableView.playersPublic) ? tableView.playersPublic : [];
+	const ownSeatSlot = typeof seatView.seatSlot === "number" ? seatView.seatSlot : null;
 	seatRefs.forEach(clearRenderedSeat);
 	playersPublic.forEach((publicSeat) => {
 		const seatRef = findSeatRef(publicSeat);
@@ -182,6 +183,11 @@ function applyRemoteState(payload) {
 			return;
 		}
 
+		// Rotate the seat display around the viewer: the top row reads left to right in
+		// the order turns come after me, like sitting at a real table.
+		if (ownSeatSlot !== null) {
+			seatRef.seatEl.style.order = `${(seatRef.seatSlot - ownSeatSlot + 8) % 8}`;
+		}
 		renderProjectedSeat(seatRef, publicSeat, {
 			activeSeatIndex: tableView.activeSeatIndex,
 			ownSeatIndex: seatIndexParam,

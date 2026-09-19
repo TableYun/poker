@@ -3799,10 +3799,18 @@ function updateSeatManagementControls() {
 	// Solo games focus the layout on the single human: their seat sits large at the
 	// bottom center while the bots line up small along the top.
 	const humanCount = gameState.allPlayers.filter((p) => p.isBot !== true).length;
-	tableMainEl?.classList.toggle(
-		"own-focus",
-		gameState.gameStarted === true && humanCount === 1,
-	);
+	const ownFocus = gameState.gameStarted === true && humanCount === 1;
+	tableMainEl?.classList.toggle("own-focus", ownFocus);
+	// In the own-focus layout the other seats read left to right in the order turns
+	// come after the human, like sitting at a real table.
+	const focusHuman = ownFocus
+		? gameState.allPlayers.find((p) => p.isBot !== true)
+		: null;
+	seatRefs.forEach((seatRef) => {
+		seatRef.seatEl.style.order = focusHuman
+			? `${(seatRef.seatSlot - focusHuman.seatSlot + 8) % 8}`
+			: "";
+	});
 	seatRefs.forEach((seatRef) => {
 		seatRef.awayEl?.classList.add("hidden");
 	});
