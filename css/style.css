@@ -276,10 +276,12 @@ main {
     flex: 1;
     min-height: 0;
     overflow: hidden;
-    place-items: center;
+    place-items: stretch center;
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    grid-template-rows: minmax(0, 1fr) auto minmax(0, 1fr);
+    /* Fixed fr ratios (not "auto") so the middle row's share stays constant whether or not the
+       action controls are visible - seat rows must never shrink just because a bet slider appeared. */
+    grid-template-rows: minmax(0, 1fr) minmax(0, 1.6fr) minmax(0, 1fr);
     grid-column-gap: 0px;
     grid-row-gap: 1.5vh;
 }
@@ -289,6 +291,11 @@ main .seat {
     max-width: 100%;
     min-width: 0;
     min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     transition: all 0.5s;
 }
 
@@ -335,7 +342,7 @@ main .seat .hole-cards img {
 @media (max-width: 900px) {
     main {
         grid-template-columns: repeat(2, 1fr);
-        grid-template-rows: minmax(0, 1fr) minmax(0, 1fr) auto minmax(0, 1fr) minmax(0, 1fr);
+        grid-template-rows: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.6fr) minmax(0, 1fr) minmax(0, 1fr);
         grid-row-gap: 0.5vh;
         place-items: stretch center;
     }
@@ -1160,6 +1167,8 @@ PLAYER
 
 .hole-cards {
     position: relative;
+    flex: 0 1 auto;
+    min-height: 0;
 }
 
 .hole-cards img {
@@ -1196,6 +1205,11 @@ main .seat.folded .hole-cards img:nth-of-type(2) {
     transform: translateX(-3.5vmin) rotate(1deg);
     transition: all 0.3s;
     filter: brightness(0.5);
+}
+
+/* The player's own seat stays fully visible even when folded - only other seats dim. */
+main .seat.own-seat.folded .hole-cards img {
+    filter: none;
 }
 
 .hole-cards .qr {

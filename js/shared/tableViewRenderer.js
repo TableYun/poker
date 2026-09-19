@@ -648,6 +648,10 @@ export function renderProjectedSeat(
 	seatRef.seatEl.classList.toggle("active", activeSeatIndex === publicSeat.seatIndex);
 	seatRef.seatEl.classList.toggle("folded", publicSeat.folded === true);
 	seatRef.seatEl.classList.toggle("allin", publicSeat.allIn === true);
+	// The player's own seat keeps full-brightness hole cards even when folded - the dimmed,
+	// pulled-together fold styling is a shared-table cue for everyone else, not for the player
+	// looking at their own private view.
+	seatRef.seatEl.classList.toggle("own-seat", isOwnSeat === true);
 	renderSeatWinnerState(seatRef, publicSeat.winner === true);
 	seatRef.nameEl.textContent = publicSeat.name;
 	seatRef.totalEl.textContent = `${publicSeat.chips}`;

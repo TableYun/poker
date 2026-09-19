@@ -859,6 +859,25 @@ export function getVisibleSolvedHand(player, communityCards) {
 	return Hand.solve([...player.holeCards, ...communityCards]);
 }
 
+const RANK_DISPLAY = { T: "10" };
+
+function formatRankForDisplay(rank) {
+	return RANK_DISPLAY[rank] ?? rank;
+}
+
+// Ranks (high to low) that appear exactly `count` times among the 5 cards pokersolver used to
+// make the hand - e.g. count=2 on a "King King 9 9 4" hand returns ["K", "9"].
+function getRanksByCount(solvedHand, count) {
+	const counts = new Map();
+	for (const card of solvedHand.cards) {
+		counts.set(card.value, (counts.get(card.value) ?? 0) + 1);
+	}
+	return Array.from(counts.entries())
+		.filter(([, cardCount]) => cardCount === count)
+		.map(([rank]) => rank)
+		.sort((a, b) => CARD_RANK_ORDER.indexOf(b) - CARD_RANK_ORDER.indexOf(a));
+}
+
 export function getShortHandStrengthLabel(solvedHand) {
 	if (!solvedHand) {
 		return "";
@@ -869,20 +888,30 @@ export function getShortHandStrengthLabel(solvedHand) {
 	switch (solvedHand.name) {
 		case "Straight Flush":
 			return "스트레이트 플러시";
-		case "Four of a Kind":
-			return "포카드";
+		case "Four of a Kind": {
+			const [rank] = getRanksByCount(solvedHand, 4);
+			return rank ? `${formatRankForDisplay(rank)}포카드` : "포카드";
+		}
 		case "Full House":
 			return "풀하우스";
 		case "Flush":
 			return "플러시";
 		case "Straight":
 			return "스트레이트";
-		case "Three of a Kind":
-			return "트리플";
-		case "Two Pair":
-			return "투페어";
-		case "Pair":
-			return "원페어";
+		case "Three of a Kind": {
+			const [rank] = getRanksByCount(solvedHand, 3);
+			return rank ? `${formatRankForDisplay(rank)}트리플` : "트리플";
+		}
+		case "Two Pair": {
+			const ranks = getRanksByCount(solvedHand, 2);
+			return ranks.length
+				? `${ranks.map(formatRankForDisplay).join(",")}투페어`
+				: "투페어";
+		}
+		case "Pair": {
+			const [rank] = getRanksByCount(solvedHand, 2);
+			return rank ? `${formatRankForDisplay(rank)}원페어` : "원페어";
+		}
 		case "High Card":
 		default:
 			return "하이카드";

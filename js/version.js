@@ -10,9 +10,20 @@ Version log writing guide:
 - Add optional contributor credits as dedicated metadata instead of release notes.
 */
 
-export const APP_VERSION = "1.9.2";
+export const APP_VERSION = "1.9.3";
 
 export const VERSION_LOG = [
+	{
+		version: "1.9.3",
+		date: "2026-09-19",
+		title: "화면 안정성과 족보 표시 개선",
+		notes: [
+			"베팅 조작 화면이 뜨거나 아웃 표시가 나타나도 좌석이 더 이상 화면 위아래로 잘리지 않습니다.",
+			"리모트 화면에서 내가 폴드해도 내 카드는 계속 선명하게 보입니다 (다른 사람 카드만 흐려짐).",
+			"원페어·투페어·트리플·포카드에는 어떤 숫자인지 표시됩니다 (예: “K원페어”).",
+		],
+		estimated: false,
+	},
 	{
 		version: "1.9.2",
 		date: "2026-09-19",
