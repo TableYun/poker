@@ -27,9 +27,7 @@ export function createChatPanel({ chatEndpoint, tableId, getSenderName }) {
 		expanded = next === true;
 		panel?.classList.toggle("expanded", expanded);
 		closeButton.classList.toggle("hidden", !expanded);
-		if (messagesEl) {
-			messagesEl.scrollTop = messagesEl.scrollHeight;
-		}
+		scrollToLatest();
 		if (expanded) {
 			input?.focus();
 		} else {
@@ -37,8 +35,19 @@ export function createChatPanel({ chatEndpoint, tableId, getSenderName }) {
 		}
 	}
 
+	function scrollToLatest() {
+		if (messagesEl) {
+			messagesEl.scrollTop = messagesEl.scrollHeight;
+		}
+	}
+
 	function setVisible(visible) {
+		const wasHidden = panel?.classList.contains("hidden");
 		panel?.classList.toggle("hidden", !visible);
+		// Scrolls applied while the panel was display:none are no-ops, so redo on reveal.
+		if (visible && wasHidden) {
+			requestAnimationFrame(scrollToLatest);
+		}
 	}
 
 	// Applies a chat tail from any sync response; already-seen ids are skipped.
@@ -65,7 +74,7 @@ export function createChatPanel({ chatEndpoint, tableId, getSenderName }) {
 		while (messagesEl.children.length > MAX_RENDERED_MESSAGES) {
 			messagesEl.removeChild(messagesEl.firstChild);
 		}
-		messagesEl.scrollTop = messagesEl.scrollHeight;
+		scrollToLatest();
 	}
 
 	async function sendMessage(text) {
