@@ -8,6 +8,7 @@ MODULE BOUNDARY: Table Chat Panel
 // DO NOT PUT HERE: Polling loops or game logic.
 
 const MAX_RENDERED_MESSAGES = 60;
+const PEEK_DURATION_MS = 5000;
 
 export function createChatPanel({ chatEndpoint, tableId, getSenderName }) {
 	const panel = document.getElementById("chat-panel");
@@ -17,6 +18,8 @@ export function createChatPanel({ chatEndpoint, tableId, getSenderName }) {
 	let lastSeq = 0;
 	let expanded = false;
 	let logOpen = false;
+	let peekTimer = null;
+	let initialTailApplied = false;
 	// The close control exists only for the expanded (mobile fullscreen) mode.
 	const closeButton = document.createElement("button");
 	closeButton.type = "button";
@@ -52,6 +55,30 @@ export function createChatPanel({ chatEndpoint, tableId, getSenderName }) {
 		}
 	}
 
+	// Any new chat message (own or someone else's) briefly reveals the log, then it
+	// collapses again unless the player opened it themselves.
+	function peekLog() {
+		if (expanded || !panel) {
+			return;
+		}
+		panel.classList.add("log-open");
+		scrollToLatest();
+		clearTimeout(peekTimer);
+		peekTimer = setTimeout(() => {
+			peekTimer = null;
+			if (!logOpen) {
+				panel.classList.remove("log-open");
+			}
+		}, PEEK_DURATION_MS);
+	}
+
+	function cancelPeek() {
+		if (peekTimer !== null) {
+			clearTimeout(peekTimer);
+			peekTimer = null;
+		}
+	}
+
 	function setVisible(visible) {
 		const wasHidden = panel?.classList.contains("hidden");
 		panel?.classList.toggle("hidden", !visible);
@@ -66,10 +93,12 @@ export function createChatPanel({ chatEndpoint, tableId, getSenderName }) {
 		if (!chat || !messagesEl) {
 			return;
 		}
+		let appendedCount = 0;
 		(chat.messages ?? []).forEach((message) => {
 			if (!message || message.id <= lastSeq) {
 				return;
 			}
+			appendedCount += 1;
 			const line = document.createElement("div");
 			line.className = "chat-line";
 			const nameEl = document.createElement("strong");
@@ -86,6 +115,11 @@ export function createChatPanel({ chatEndpoint, tableId, getSenderName }) {
 			messagesEl.removeChild(messagesEl.firstChild);
 		}
 		scrollToLatest();
+		// The backlog on page load stays collapsed; only genuinely new messages peek.
+		if (appendedCount > 0 && initialTailApplied) {
+			peekLog();
+		}
+		initialTailApplied = true;
 	}
 
 	async function sendMessage(text) {
@@ -126,6 +160,7 @@ export function createChatPanel({ chatEndpoint, tableId, getSenderName }) {
 			if (panel?.contains(event.target)) {
 				return;
 			}
+			cancelPeek();
 			setLogOpen(false);
 			if (expanded) {
 				setExpanded(false);
