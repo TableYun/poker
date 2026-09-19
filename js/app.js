@@ -4037,11 +4037,13 @@ poker.init();
  * - AUTO_RELOAD_ON_SW_UPDATE: reload page once after an update
  -------------------------------------------------------------------------------------------------- */
 const USE_SERVICE_WORKER = true;
-const SERVICE_WORKER_VERSION = "2026-09-19-v12";
+// Tied to the app version so every release gets a fresh service worker and cache.
+const SERVICE_WORKER_VERSION = APP_VERSION;
 const AUTO_RELOAD_ON_SW_UPDATE = true;
 
 initServiceWorker({
 	useServiceWorker: USE_SERVICE_WORKER,
 	serviceWorkerVersion: SERVICE_WORKER_VERSION,
 	autoReloadOnUpdate: AUTO_RELOAD_ON_SW_UPDATE,
+	appVersion: APP_VERSION,
 });

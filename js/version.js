@@ -10,9 +10,19 @@ Version log writing guide:
 - Add optional contributor credits as dedicated metadata instead of release notes.
 */
 
-export const APP_VERSION = "1.9.6";
+export const APP_VERSION = "1.9.7";
 
 export const VERSION_LOG = [
+	{
+		version: "1.9.7",
+		date: "2026-09-19",
+		title: "자동 업데이트와 로그 스크롤",
+		notes: [
+			"새 버전이 배포되면 자동으로 감지해서 한 번만 새로고침하고 바로 적용됩니다. 이제 두 번씩 새로고침할 필요가 없습니다.",
+			"내 카드 화면의 진행 로그가 자체 스크롤 영역으로 바뀌어, 로그가 쌓여도 콜·폴드 버튼이 밀려나지 않습니다.",
+		],
+		estimated: false,
+	},
 	{
 		version: "1.9.6",
 		date: "2026-09-19",

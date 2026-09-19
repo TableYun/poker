@@ -467,6 +467,10 @@ SINGLE VIEW
     gap: 1rem;
     margin-top: 1.5rem;
     padding-bottom: 0.5rem;
+    /* The log scrolls inside its own box so a long history never pushes the action
+       buttons out of view. */
+    max-height: 30vh;
+    overflow-y: auto;
 }
 
 #singleview-notifications div {

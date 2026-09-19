@@ -128,10 +128,51 @@ async function unregisterServiceWorkers(projectScope, projectSlug, swCachePrefix
 	}
 }
 
+// Fetches a fresh copy of version.js past the service worker cache; when it announces a
+// newer app version, this project's SW caches are cleared and the page reloads once so
+// players get the update without having to refresh twice by hand.
+async function checkForNewAppVersion(
+	appVersion,
+	{ projectScope, projectSlug, swCachePrefix },
+) {
+	try {
+		const res = await fetch(`./js/version.js?u=${Date.now()}`, {
+			cache: "no-store",
+		});
+		if (!res.ok) {
+			return;
+		}
+		const text = await res.text();
+		const match = text.match(/APP_VERSION\s*=\s*"([^"]+)"/);
+		if (!match || match[1] === appVersion) {
+			return;
+		}
+
+		const guardKey = "poker:auto-update-version";
+		try {
+			if (sessionStorage.getItem(guardKey) === match[1]) {
+				return; // already tried once this session - avoid a reload loop
+			}
+			sessionStorage.setItem(guardKey, match[1]);
+		} catch {
+			// Storage unavailable: still update, a repeated reload is the lesser evil.
+		}
+
+		console.log(
+			`New app version ${match[1]} available (running ${appVersion}); refreshing caches...`,
+		);
+		await unregisterServiceWorkers(projectScope, projectSlug, swCachePrefix);
+		globalThis.location.reload();
+	} catch {
+		// Offline or fetch failed - keep running the cached version.
+	}
+}
+
 export function initServiceWorker({
 	useServiceWorker,
 	serviceWorkerVersion,
 	autoReloadOnUpdate,
+	appVersion = null,
 }) {
 	if (!("serviceWorker" in navigator)) {
 		return;
@@ -174,6 +215,13 @@ export function initServiceWorker({
 
 		if (useServiceWorker) {
 			await registerServiceWorker(projectSlug, serviceWorkerVersion);
+			if (appVersion) {
+				checkForNewAppVersion(appVersion, {
+					projectScope,
+					projectSlug,
+					swCachePrefix,
+				});
+			}
 		} else {
 			await unregisterServiceWorkers(projectScope, projectSlug, swCachePrefix);
 		}
