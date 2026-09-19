@@ -1823,6 +1823,11 @@ Chat panel (bottom-left on the host table and remote views)
     display: none;
 }
 
+/* The log only shows while the input is in use (or in the fullscreen view). */
+.chat-panel:not(.expanded):not(.log-open) .chat-messages {
+    display: none;
+}
+
 .chat-line strong {
     color: var(--yellow);
     font-weight: normal;

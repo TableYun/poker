@@ -16,6 +16,7 @@ export function createChatPanel({ chatEndpoint, tableId, getSenderName }) {
 	const input = document.getElementById("chat-input");
 	let lastSeq = 0;
 	let expanded = false;
+	let logOpen = false;
 	// The close control exists only for the expanded (mobile fullscreen) mode.
 	const closeButton = document.createElement("button");
 	closeButton.type = "button";
@@ -38,6 +39,16 @@ export function createChatPanel({ chatEndpoint, tableId, getSenderName }) {
 	function scrollToLatest() {
 		if (messagesEl) {
 			messagesEl.scrollTop = messagesEl.scrollHeight;
+		}
+	}
+
+	// The log stays collapsed to just the input bar until the input is tapped;
+	// tapping anywhere outside the panel collapses it again.
+	function setLogOpen(next) {
+		logOpen = next === true;
+		panel?.classList.toggle("log-open", logOpen);
+		if (logOpen) {
+			scrollToLatest();
 		}
 	}
 
@@ -105,6 +116,21 @@ export function createChatPanel({ chatEndpoint, tableId, getSenderName }) {
 		});
 		// Typing in chat must not trigger table shortcuts.
 		input?.addEventListener("keydown", (event) => event.stopPropagation());
+		input?.addEventListener("focus", () => {
+			if (!expanded) {
+				setLogOpen(true);
+			}
+		});
+		// Tapping the table ("the ground") closes the log and the fullscreen view.
+		document.addEventListener("pointerdown", (event) => {
+			if (panel?.contains(event.target)) {
+				return;
+			}
+			setLogOpen(false);
+			if (expanded) {
+				setExpanded(false);
+			}
+		});
 		// On phones, tapping the compact panel opens a large front-and-center chat view.
 		panel?.addEventListener("click", (event) => {
 			if (expanded || !globalThis.matchMedia("(max-width: 900px)").matches) {
