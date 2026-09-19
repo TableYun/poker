@@ -1177,9 +1177,17 @@ PLAYER
 }
 
 .hole-cards .big {
-    width: 47vmin;
+    /* Also capped by viewport height so short/landscape windows (e.g. a desktop browser)
+       don't let the cards spill over the name, chips, and action controls below. */
+    width: min(47vmin, 36vh, 350px);
     margin: 4vmin;
     max-width: 350px;
+}
+
+/* The single view's card block must never flex-shrink below its content - the images keep
+   their size and would overlap everything beneath. Let the page scroll instead. */
+#single .hole-cards {
+    flex-shrink: 0;
 }
 
 .hole-cards img:nth-of-type(1) {

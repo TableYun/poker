@@ -10,9 +10,19 @@ Version log writing guide:
 - Add optional contributor credits as dedicated metadata instead of release notes.
 */
 
-export const APP_VERSION = "1.9.5";
+export const APP_VERSION = "1.9.6";
 
 export const VERSION_LOG = [
+	{
+		version: "1.9.6",
+		date: "2026-09-19",
+		title: "원격 참가 첫 화면 개선",
+		notes: [
+			"QR이나 링크로 참가하면 이제 처음부터 전체 테이블 화면이 열립니다. 동반 카드 화면은 전환 버튼으로 이동할 수 있습니다.",
+			"내 카드 화면이 가로로 넓거나 낮은 창(PC 브라우저 등)에서도 카드가 이름·칩·버튼을 가리지 않습니다.",
+		],
+		estimated: false,
+	},
 	{
 		version: "1.9.5",
 		date: "2026-09-19",

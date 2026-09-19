@@ -1395,17 +1395,29 @@ function showPlayerQr(player, card1, card2) {
 	}
 
 	seatRef.qrContainer.classList.remove("hidden");
-	const holeCardsUrl = createPageUrl("hole-cards.html");
-	holeCardsUrl.searchParams.set("card1", card1);
-	holeCardsUrl.searchParams.set("card2", card2);
-	holeCardsUrl.searchParams.set("name", player.name);
-	holeCardsUrl.searchParams.set("chips", `${player.chips}`);
-	holeCardsUrl.searchParams.set("seatIndex", `${player.seatIndex}`);
+	// On a synced table, joining lands on the full remote-table view first; the compact
+	// card view stays reachable through its switch link. Without sync the QR falls back
+	// to the standalone card page fed by URL params.
+	let url;
 	if (tableId !== null) {
-		holeCardsUrl.searchParams.set("tableId", tableId);
+		const remoteTableUrl = createPageUrl("remoteTable.html");
+		remoteTableUrl.searchParams.set("tableId", tableId);
+		remoteTableUrl.searchParams.set("seatIndex", `${player.seatIndex}`);
+		url = remoteTableUrl.toString();
+		seatRef.remoteLink.href = url;
+		seatRef.remoteLink.classList.remove("hidden");
+	} else {
+		const holeCardsUrl = createPageUrl("hole-cards.html");
+		holeCardsUrl.searchParams.set("card1", card1);
+		holeCardsUrl.searchParams.set("card2", card2);
+		holeCardsUrl.searchParams.set("name", player.name);
+		holeCardsUrl.searchParams.set("chips", `${player.chips}`);
+		holeCardsUrl.searchParams.set("seatIndex", `${player.seatIndex}`);
+		holeCardsUrl.searchParams.set("t", `${Date.now()}`);
+		url = holeCardsUrl.toString();
+		seatRef.remoteLink.removeAttribute("href");
+		seatRef.remoteLink.classList.add("hidden");
 	}
-	holeCardsUrl.searchParams.set("t", `${Date.now()}`);
-	const url = holeCardsUrl.toString();
 	seatRef.qrLink.replaceChildren();
 	seatRef.qrLink.href = url;
 	QrCreator.render({
@@ -1415,17 +1427,6 @@ function showPlayerQr(player, card1, card2) {
 		background: "#fff",
 		radius: 0,
 	}, seatRef.qrLink);
-
-	if (tableId !== null) {
-		const remoteTableUrl = createPageUrl("remoteTable.html");
-		remoteTableUrl.searchParams.set("tableId", tableId);
-		remoteTableUrl.searchParams.set("seatIndex", `${player.seatIndex}`);
-		seatRef.remoteLink.href = remoteTableUrl.toString();
-		seatRef.remoteLink.classList.remove("hidden");
-	} else {
-		seatRef.remoteLink.removeAttribute("href");
-		seatRef.remoteLink.classList.add("hidden");
-	}
 
 	seatRef.qrContainer.dataset.url = url;
 }
