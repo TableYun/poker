@@ -1272,6 +1272,19 @@ main.own-focus #table-middle {
 main.own-focus .seat.own-seat {
     grid-area: 3 / 1 / 4 / -1;
     justify-self: center;
+    width: auto;
+    max-width: 100%;
+}
+
+/* The own cards get a real minimum size - vmin alone makes them tiny on tall phone
+   screens - and the dealer/blind badge shrinks so it stops covering the card face. */
+main.own-focus .seat.own-seat .hole-cards img {
+    width: clamp(64px, 8vmin, 120px);
+}
+
+main.own-focus .seat.own-seat .hole-cards .blind-icons {
+    width: 4vmin;
+    min-width: 28px;
 }
 
 main.own-focus .seat:not(.own-seat) .hole-cards img {
