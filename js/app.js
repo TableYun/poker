@@ -251,8 +251,8 @@ if (SPEED_MODE) {
 	DEBUG_FLOW = true;
 }
 
-const STATE_SYNC_ENDPOINT = "https://tableyun-poker.deno.dev/state";
-const ACTION_SYNC_ENDPOINT = "https://tableyun-poker.deno.dev/action";
+const STATE_SYNC_ENDPOINT = "https://poker.tableyun.deno.net/state";
+const ACTION_SYNC_ENDPOINT = "https://poker.tableyun.deno.net/action";
 let tableId = null;
 const STATE_SYNC_DELAY = 750;
 const ACTION_POLL_INTERVAL = 1000;
@@ -3703,7 +3703,7 @@ poker.init();
  * - AUTO_RELOAD_ON_SW_UPDATE: reload page once after an update
  -------------------------------------------------------------------------------------------------- */
 const USE_SERVICE_WORKER = true;
-const SERVICE_WORKER_VERSION = "2026-09-19-v8";
+const SERVICE_WORKER_VERSION = "2026-09-19-v9";
 const AUTO_RELOAD_ON_SW_UPDATE = true;
 
 initServiceWorker({
