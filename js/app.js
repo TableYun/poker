@@ -1037,6 +1037,8 @@ function renderRestoredGameState() {
 	renderStatsOverlay();
 	syncLogUi();
 	instructionsButton.classList.add("hidden");
+	blindUpControl?.classList.add("hidden");
+	autoRebuyControl?.classList.add("hidden");
 	startButton.classList.toggle("hidden", gameState.handInProgress === true);
 	if (!gameState.handInProgress) {
 		setStartButtonLabel("새 라운드");

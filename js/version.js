@@ -10,9 +10,18 @@ Version log writing guide:
 - Add optional contributor credits as dedicated metadata instead of release notes.
 */
 
-export const APP_VERSION = "1.9.24";
+export const APP_VERSION = "1.9.25";
 
 export const VERSION_LOG = [
+	{
+		version: "1.9.25",
+		date: "2026-09-20",
+		title: "내 차례 화면 잘림 수정",
+		notes: [
+			"내 차례에 버튼과 슬라이더가 나타나도 팟 금액·알림·커뮤니티 카드가 잘리지 않습니다. 액션 중에는 가운데 영역이 자동으로 촘촘해지고, 대기 중에는 카드가 원래 크기로 보입니다.",
+		],
+		estimated: false,
+	},
 	{
 		version: "1.9.24",
 		date: "2026-09-20",
