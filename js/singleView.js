@@ -24,6 +24,8 @@ import {
 } from "./shared/humanTurnController.js";
 import { getSeatView, getTableView } from "./shared/syncViewModel.js";
 import { initSound, initSoundButton, playTurnChime } from "./shared/sound.js";
+import { initServiceWorker } from "./serviceWorkerRegistration.js";
+import { APP_VERSION } from "./version.js";
 
 /* --------------------------------------------------------------------------------------------------
 Variables
@@ -329,3 +331,12 @@ globalThis.app = {
 };
 
 app.init();
+
+// Register the service worker here too so phones that only ever open the card view get
+// the precached card faces (no blank cards on flaky mobile data) and auto-updates.
+initServiceWorker({
+	useServiceWorker: true,
+	serviceWorkerVersion: APP_VERSION,
+	autoReloadOnUpdate: true,
+	appVersion: APP_VERSION,
+});

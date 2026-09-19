@@ -24,6 +24,8 @@ import {
 } from "./shared/humanTurnController.js";
 import { getSeatView, getTableView } from "./shared/syncViewModel.js";
 import { initSound, initSoundButton, playTurnChime } from "./shared/sound.js";
+import { initServiceWorker } from "./serviceWorkerRegistration.js";
+import { APP_VERSION } from "./version.js";
 import {
 	clearChipTransferAnimation,
 	clearRenderedSeat,
@@ -308,6 +310,16 @@ function init() {
 	setNotification("테이블 불러오는 중...");
 	pollState();
 }
+
+// Phones usually open only this page, so register the service worker here too - it
+// precaches every card face, which stops cards from showing up blank when a single
+// SVG fails to load over mobile data.
+initServiceWorker({
+	useServiceWorker: true,
+	serviceWorkerVersion: APP_VERSION,
+	autoReloadOnUpdate: true,
+	appVersion: APP_VERSION,
+});
 
 globalThis.remoteTable = {
 	init,

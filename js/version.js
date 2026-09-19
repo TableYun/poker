@@ -10,9 +10,19 @@ Version log writing guide:
 - Add optional contributor credits as dedicated metadata instead of release notes.
 */
 
-export const APP_VERSION = "1.9.15";
+export const APP_VERSION = "1.9.16";
 
 export const VERSION_LOG = [
+	{
+		version: "1.9.16",
+		date: "2026-09-19",
+		title: "모바일 카드 확대와 빈 카드 수정",
+		notes: [
+			"휴대폰에서 내 카드가 화면 폭의 4분의 1 크기로 더 크게 표시됩니다.",
+			"모바일 데이터에서 카드 그림 파일이 로드에 실패해 한 장이 하얗게 비어 보이던 문제를 고쳤습니다. 이제 원격 화면도 카드 전체를 미리 저장해 두고 사용합니다.",
+		],
+		estimated: false,
+	},
 	{
 		version: "1.9.15",
 		date: "2026-09-19",
