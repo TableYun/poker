@@ -15,6 +15,27 @@ export function createChatPanel({ chatEndpoint, tableId, getSenderName }) {
 	const form = document.getElementById("chat-form");
 	const input = document.getElementById("chat-input");
 	let lastSeq = 0;
+	let expanded = false;
+	// The close control exists only for the expanded (mobile fullscreen) mode.
+	const closeButton = document.createElement("button");
+	closeButton.type = "button";
+	closeButton.className = "chat-close hidden";
+	closeButton.textContent = "닫기 ✕";
+	panel?.prepend(closeButton);
+
+	function setExpanded(next) {
+		expanded = next === true;
+		panel?.classList.toggle("expanded", expanded);
+		closeButton.classList.toggle("hidden", !expanded);
+		if (messagesEl) {
+			messagesEl.scrollTop = messagesEl.scrollHeight;
+		}
+		if (expanded) {
+			input?.focus();
+		} else {
+			input?.blur();
+		}
+	}
 
 	function setVisible(visible) {
 		panel?.classList.toggle("hidden", !visible);
@@ -75,6 +96,20 @@ export function createChatPanel({ chatEndpoint, tableId, getSenderName }) {
 		});
 		// Typing in chat must not trigger table shortcuts.
 		input?.addEventListener("keydown", (event) => event.stopPropagation());
+		// On phones, tapping the compact panel opens a large front-and-center chat view.
+		panel?.addEventListener("click", (event) => {
+			if (expanded || !globalThis.matchMedia("(max-width: 900px)").matches) {
+				return;
+			}
+			if (event.target === input || event.target.closest(".chat-form button")) {
+				return;
+			}
+			setExpanded(true);
+		});
+		closeButton.addEventListener("click", (event) => {
+			event.stopPropagation();
+			setExpanded(false);
+		});
 	}
 
 	return {
