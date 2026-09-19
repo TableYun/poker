@@ -107,6 +107,8 @@ const newRoundCancelButton = document.querySelector("#new-round-cancel-button");
 const instructionsButton = document.querySelector("#instructions-button");
 const blindUpControl = document.querySelector("#blind-up-control");
 const blindUpCheckbox = document.querySelector("#blind-up-checkbox");
+const autoRebuyControl = document.querySelector("#auto-rebuy-control");
+const autoRebuyCheckbox = document.querySelector("#auto-rebuy-checkbox");
 const rotateIcons = document.querySelectorAll(".seat .rotate");
 const closeButtons = document.querySelectorAll(".close");
 const rebuyButtons = document.querySelectorAll(".rebuy");
@@ -157,7 +159,7 @@ const amountSlider = document.querySelector("#amount-slider");
 const amountIncrementButton = document.querySelector(
 	"#amount-increment-button",
 );
-const sliderOutput = document.querySelector("output");
+const sliderOutput = document.getElementById("slider-output");
 const seatRefs = Array.from(document.querySelectorAll(".seat")).map((
 	seatEl,
 	seatSlot,
@@ -240,7 +242,9 @@ const MAX_NEW_ROUND_COUNTDOWN_SECONDS = 60;
 const NEW_ROUND_COUNTDOWN_STORAGE_KEY = "poker:new-round-countdown-seconds";
 let NEW_ROUND_COUNTDOWN_SECONDS = DEFAULT_NEW_ROUND_COUNTDOWN_SECONDS;
 const BLIND_UP_STORAGE_KEY = "poker:blind-up-enabled";
+const AUTO_REBUY_STORAGE_KEY = "poker:auto-rebuy-enabled";
 let blindUpEnabled = true;
+let autoRebuyEnabled = false;
 const NEW_ROUND_COUNTDOWN_INTERVAL = 1000;
 const SAVED_GAME_SCHEMA_VERSION = 1;
 const SAVED_GAME_STORAGE_KEY = "poker:saved-game:v1";
@@ -492,6 +496,30 @@ function initBlindUpControl() {
 	blindUpCheckbox.addEventListener("change", () => {
 		blindUpEnabled = blindUpCheckbox.checked;
 		saveBlindUpEnabled(blindUpEnabled);
+	}, false);
+}
+
+function initAutoRebuyControl() {
+	const storage = getLocalStorage();
+	if (storage) {
+		try {
+			autoRebuyEnabled = storage.getItem(AUTO_REBUY_STORAGE_KEY) === "true";
+		} catch (error) {
+			console.warn("auto-rebuy storage read failed", error);
+		}
+	}
+	if (!autoRebuyCheckbox) {
+		return;
+	}
+	autoRebuyCheckbox.checked = autoRebuyEnabled;
+	autoRebuyCheckbox.addEventListener("change", () => {
+		autoRebuyEnabled = autoRebuyCheckbox.checked;
+		const store = getLocalStorage();
+		try {
+			store?.setItem(AUTO_REBUY_STORAGE_KEY, autoRebuyEnabled ? "true" : "false");
+		} catch (error) {
+			console.warn("auto-rebuy storage write failed", error);
+		}
 	}, false);
 }
 
@@ -2119,6 +2147,7 @@ function setPendingAction(player) {
 		minRaise: actionState.minRaise,
 		maxRaiseAmount: actionState.maxRaiseAmount,
 		canCheck: actionState.canCheck,
+		pot: actionState.pot,
 		buttonLabel: getActionButtonLabel(actionState.minAmount, actionState),
 	};
 	gameState.pendingAction = pendingAction;
@@ -2558,6 +2587,7 @@ function startGame() {
 			startButton.classList.add("hidden");
 			instructionsButton.classList.add("hidden");
 			blindUpControl?.classList.add("hidden");
+			autoRebuyControl?.classList.add("hidden");
 			closeAllOverlays();
 			gameState.gameStarted = true;
 			initStateSyncForGame();
@@ -3691,6 +3721,20 @@ function applyBetweenHandsRosterChanges() {
 		return;
 	}
 
+	// Auto rebuy (lobby option): busted humans restart with a fresh stack before the
+	// next hand is planned, so they never even sit a hand out.
+	if (autoRebuyEnabled) {
+		gameState.allPlayers.forEach((player) => {
+			if (player.isBot || player.chips > 0) {
+				return;
+			}
+			player.chips = STARTING_STACK;
+			renderPlayerSeat(player);
+			enqueueNotification(`${player.name} 자동 리바인 (${STARTING_STACK} 칩).`);
+			logFlow("player_auto_rebuy", { name: player.name });
+		});
+	}
+
 	// Reserved bot kicks fire now that the hand is over.
 	gameState.players
 		.filter((player) => player.isBot && player.pendingRemoval === true)
@@ -4013,6 +4057,7 @@ function init() {
 	initSoundButton(soundButton);
 	initRoundDelayInput();
 	initBlindUpControl();
+	initAutoRebuyControl();
 
 	// Prevent framing
 	if (globalThis.top !== globalThis.self) {

@@ -26,6 +26,7 @@ export function getPlayerActionState(gameState, player) {
 		minRaise,
 		maxRaiseAmount,
 		canCheck: needToCall === 0,
+		pot: gameState.pot ?? 0,
 	};
 }
 

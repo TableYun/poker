@@ -398,6 +398,10 @@
 					<input type="checkbox" id="blind-up-checkbox" checked>
 					블라인드 업
 				</label>
+				<label id="auto-rebuy-control" class="blind-up-control">
+					<input type="checkbox" id="auto-rebuy-checkbox">
+					자동 리바인
+				</label>
 				<button type="button" id="instructions-button" name="button">설명</button>
 				<button type="button" id="stats-button" class="hidden" name="button">통계</button>
 				<button type="button" id="log-button" class="hidden" name="button">로그</button>
@@ -405,10 +409,16 @@
 				<button type="button" id="fold-button" class="hidden" name="button">폴드</button>
 				<button type="button" id="action-button" class="hidden" name="button">체크</button>
 				<div id="amount-controls" class="amount-controls hidden">
+					<div class="raise-presets">
+						<button type="button" class="raise-preset" name="button" data-preset="0.5">1/2 팟</button>
+						<button type="button" class="raise-preset" name="button" data-preset="0.66">2/3 팟</button>
+						<button type="button" class="raise-preset" name="button" data-preset="1">팟</button>
+						<button type="button" class="raise-preset" name="button" data-preset="max">올인</button>
+					</div>
 					<button type="button" id="amount-decrement-button" class="amount-step-button"
 						name="button">-</button>
 					<input type="range" id="amount-slider" name="amount" value="0" min="0" max="2000" step="10">
-					<output>0</output>
+					<input type="number" id="slider-output" class="amount-output" inputmode="numeric" step="10" value="0">
 					<button type="button" id="amount-increment-button" class="amount-step-button"
 						name="button">+</button>
 				</div>

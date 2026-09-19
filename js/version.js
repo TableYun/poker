@@ -10,9 +10,20 @@ Version log writing guide:
 - Add optional contributor credits as dedicated metadata instead of release notes.
 */
 
-export const APP_VERSION = "1.9.23";
+export const APP_VERSION = "1.9.24";
 
 export const VERSION_LOG = [
+	{
+		version: "1.9.24",
+		date: "2026-09-20",
+		title: "레이즈 프리셋·직접 입력·자동 리바인",
+		notes: [
+			"레이즈 컨트롤에 1/2 팟·2/3 팟·팟·올인 버튼이 추가되어 한 번에 원하는 크기로 베팅할 수 있습니다.",
+			"금액 칸에 키보드로 직접 입력할 수 있고, Enter를 누르면 바로 베팅됩니다.",
+			"시작 전에 “자동 리바인”을 켜두면 파산해도 다음 핸드에 자동으로 새 스택(2000칩)으로 이어서 플레이합니다.",
+		],
+		estimated: false,
+	},
 	{
 		version: "1.9.23",
 		date: "2026-09-20",

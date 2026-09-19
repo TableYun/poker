@@ -82,6 +82,38 @@ export function createActionAmountControls({
 	incrementButton = null,
 }) {
 	let currentActionState = null;
+	// Quick raise presets (1/2 팟 etc.) live inside the same .amount-controls container.
+	const presetButtons = Array.from(
+		amountSlider.closest(".amount-controls")?.querySelectorAll(".raise-preset") ?? [],
+	);
+
+	// Standard sizing: raise-to = call + fraction x (pot + call); with nothing to call
+	// this is simply a fraction-of-pot bet. Normalization snaps it into the legal range.
+	function getPresetAmount(preset) {
+		if (!currentActionState) {
+			return null;
+		}
+		if (preset === "max") {
+			return currentActionState.maxAmount;
+		}
+		const fraction = Number(preset);
+		if (!Number.isFinite(fraction) || fraction <= 0) {
+			return null;
+		}
+		const pot = currentActionState.pot ?? 0;
+		const call = currentActionState.needToCall;
+		const step = getSliderStepAmount(amountSlider);
+		const raw = call + (pot + call) * fraction;
+		return Math.round(raw / step) * step;
+	}
+
+	function handlePresetClick(event) {
+		const amount = getPresetAmount(event.currentTarget.dataset.preset);
+		if (amount === null) {
+			return;
+		}
+		setCurrentAmount(amount, { normalize: true });
+	}
 
 	function setCurrentAmount(amount, { normalize = false } = {}) {
 		if (!currentActionState) {
@@ -137,11 +169,58 @@ export function createActionAmountControls({
 		stepAmount(1);
 	}
 
+	// Typing in the amount field moves the slider live without rewriting the field
+	// (so entering "500" isn't clamped after the first digit); leaving the field or
+	// pressing Enter normalizes it to a legal amount.
+	function handleOutputTyping() {
+		if (!currentActionState) {
+			return;
+		}
+		const typed = Number.parseInt(sliderOutput.value, 10);
+		if (Number.isNaN(typed)) {
+			return;
+		}
+		const clamped = clampActionAmount(typed, currentActionState);
+		amountSlider.value = clamped;
+		sliderOutput.classList.toggle(
+			"invalid",
+			typed !== clamped || isInvalidRaiseAmount(clamped, currentActionState),
+		);
+		actionButton.textContent = getActionButtonLabel(clamped, currentActionState);
+	}
+
+	function handleOutputCommit() {
+		setCurrentAmount(Number.parseInt(sliderOutput.value, 10), { normalize: true });
+	}
+
+	function handleOutputKeydown(event) {
+		if (event.key === "Enter") {
+			event.preventDefault();
+			handleOutputCommit();
+			actionButton.click();
+		}
+	}
+
 	function init() {
 		amountSlider.addEventListener("input", handleActionSliderInput);
 		amountSlider.addEventListener("change", handleActionSliderChange);
 		decrementButton?.addEventListener("click", handleDecrementClick);
 		incrementButton?.addEventListener("click", handleIncrementClick);
+		presetButtons.forEach((button) => button.addEventListener("click", handlePresetClick));
+		if (sliderOutput.tagName === "INPUT") {
+			sliderOutput.addEventListener("input", handleOutputTyping);
+			sliderOutput.addEventListener("change", handleOutputCommit);
+			sliderOutput.addEventListener("keydown", handleOutputKeydown);
+		}
+	}
+
+	function setEnabled(enabled) {
+		presetButtons.forEach((button) => {
+			button.disabled = !enabled;
+		});
+		if (sliderOutput.tagName === "INPUT") {
+			sliderOutput.disabled = !enabled;
+		}
 	}
 
 	function clear() {
@@ -171,6 +250,7 @@ export function createActionAmountControls({
 		init,
 		clear,
 		render,
+		setEnabled,
 	};
 }
 
@@ -218,6 +298,7 @@ function createTurnActionUi({
 		if (incrementButton) {
 			incrementButton.disabled = !enabled;
 		}
+		amountControls.setEnabled(enabled);
 	}
 
 	function handlePrimaryAction() {

@@ -38,10 +38,16 @@
 				<button type="button" id="single-fold-button" class="hidden" name="button">폴드</button>
 				<button type="button" id="single-action-button" class="hidden" name="button">체크</button>
 				<div id="single-amount-controls" class="amount-controls hidden">
+					<div class="raise-presets">
+						<button type="button" class="raise-preset" name="button" data-preset="0.5">1/2 팟</button>
+						<button type="button" class="raise-preset" name="button" data-preset="0.66">2/3 팟</button>
+						<button type="button" class="raise-preset" name="button" data-preset="1">팟</button>
+						<button type="button" class="raise-preset" name="button" data-preset="max">올인</button>
+					</div>
 					<button type="button" id="single-amount-decrement-button" class="amount-step-button"
 						name="button">-</button>
 					<input type="range" id="single-amount-slider" name="amount" value="0" min="0" max="2000" step="10">
-					<output id="single-slider-output">0</output>
+					<input type="number" id="single-slider-output" class="amount-output" inputmode="numeric" step="10" value="0">
 					<button type="button" id="single-amount-increment-button" class="amount-step-button"
 						name="button">+</button>
 				</div>

@@ -247,7 +247,8 @@ input[type=range]:disabled {
     opacity: 0.7;
 }
 
-output {
+output,
+.amount-output {
     width: 76px;
     text-align: center;
     background-color: var(--blue);
@@ -258,7 +259,57 @@ output {
     font-size: 1em;
 }
 
-output.invalid {
+/* The amount field is a real number input now (typeable); keep the pill look. */
+.amount-output {
+    border: none;
+    font-family: 'Secular One', sans-serif;
+    appearance: textfield;
+    -moz-appearance: textfield;
+    margin: 0;
+    flex: 0 0 auto;
+}
+
+.amount-output::-webkit-outer-spin-button,
+.amount-output::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.amount-output:focus {
+    outline: 2px solid var(--yellow);
+}
+
+/* Quick raise presets sit on their own line above the slider. */
+.amount-controls {
+    flex-wrap: wrap;
+}
+
+.raise-presets {
+    flex: 1 1 100%;
+    display: flex;
+    justify-content: center;
+    gap: 1.5vmin;
+}
+
+.raise-preset {
+    width: auto;
+    margin: 0;
+    padding: 0.5vmin 1.8vmin;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    background-color: var(--blue-darker);
+    color: var(--yellow);
+    border: 1px solid var(--yellow);
+    border-radius: 999px;
+    box-shadow: none;
+}
+
+.raise-preset:disabled {
+    opacity: 0.5;
+}
+
+output.invalid,
+.amount-output.invalid {
     color: var(--invalid);
 }
 
