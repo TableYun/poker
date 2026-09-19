@@ -10,9 +10,18 @@ Version log writing guide:
 - Add optional contributor credits as dedicated metadata instead of release notes.
 */
 
-export const APP_VERSION = "1.9.35";
+export const APP_VERSION = "1.9.36";
 
 export const VERSION_LOG = [
+	{
+		version: "1.9.36",
+		date: "2026-09-20",
+		title: "자동 리바인 기본 켜짐",
+		notes: [
+			"게임 시작 전 자동 리바인 옵션이 처음부터 체크된 상태로 시작합니다. 끄면 다음에도 꺼진 상태가 유지됩니다.",
+		],
+		estimated: false,
+	},
 	{
 		version: "1.9.35",
 		date: "2026-09-20",

@@ -245,7 +245,7 @@ let NEW_ROUND_COUNTDOWN_SECONDS = DEFAULT_NEW_ROUND_COUNTDOWN_SECONDS;
 const BLIND_UP_STORAGE_KEY = "poker:blind-up-enabled";
 const AUTO_REBUY_STORAGE_KEY = "poker:auto-rebuy-enabled";
 let blindUpEnabled = true;
-let autoRebuyEnabled = false;
+let autoRebuyEnabled = true;
 const NEW_ROUND_COUNTDOWN_INTERVAL = 1000;
 const SAVED_GAME_SCHEMA_VERSION = 1;
 const SAVED_GAME_STORAGE_KEY = "poker:saved-game:v1";
@@ -505,7 +505,8 @@ function initAutoRebuyControl() {
 	const storage = getLocalStorage();
 	if (storage) {
 		try {
-			autoRebuyEnabled = storage.getItem(AUTO_REBUY_STORAGE_KEY) === "true";
+			// Checked by default; an explicit "false" from a previous visit turns it off.
+			autoRebuyEnabled = storage.getItem(AUTO_REBUY_STORAGE_KEY) !== "false";
 		} catch (error) {
 			console.warn("auto-rebuy storage read failed", error);
 		}
