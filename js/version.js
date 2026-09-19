@@ -10,9 +10,18 @@ Version log writing guide:
 - Add optional contributor credits as dedicated metadata instead of release notes.
 */
 
-export const APP_VERSION = "1.9.17";
+export const APP_VERSION = "1.9.18";
 
 export const VERSION_LOG = [
+	{
+		version: "1.9.18",
+		date: "2026-09-19",
+		title: "턴 전달 안정화",
+		notes: [
+			"다른 사람이 액션한 뒤 내 차례 표시가 늦게 오거나 오지 않던 문제를 고쳤습니다. 서버가 변화를 놓치지 않고 즉시 전달하며, 화면이 30초 넘게 갱신을 못 받으면 스스로 전체 상태를 다시 받아와 복구합니다.",
+		],
+		estimated: false,
+	},
 	{
 		version: "1.9.17",
 		date: "2026-09-19",

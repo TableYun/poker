@@ -59,7 +59,9 @@ const STATE_ENDPOINT = "https://poker-sync.tableyun.workers.dev/state";
 const ACTION_ENDPOINT = "https://poker-sync.tableyun.workers.dev/action";
 const REFRESH_INTERVAL = 2000;
 const ACTION_STEP = 10;
+const STATE_WATCHDOG_MS = 30_000;
 let lastVersion = 0;
+let lastStateAt = 0;
 let pollTimeoutId = null;
 let isPolling = false;
 let hasSyncedState = false;
@@ -244,6 +246,12 @@ async function pollState() {
 	}
 	isPolling = true;
 	const startedAt = Date.now();
+	// Watchdog: without a fresh state for a while, re-request the full state instead of
+	// asking "anything newer than my version?" - self-heals any version desync that would
+	// otherwise leave this device stuck on an old turn.
+	if (lastVersion > 0 && startedAt - lastStateAt > STATE_WATCHDOG_MS) {
+		lastVersion = 0;
+	}
 	try {
 		const url = `${STATE_ENDPOINT}?tableId=${
 			encodeURIComponent(tableId)
@@ -256,6 +264,7 @@ async function pollState() {
 		if (res.ok) {
 			const payload = await res.json();
 			lastVersion = payload.version;
+			lastStateAt = Date.now();
 			setOnlineElementsVisible(applyRemoteState(payload));
 		} else {
 			setOnlineElementsVisible(false);

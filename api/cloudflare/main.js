@@ -188,12 +188,23 @@ export class PokerTable {
 		}
 
 		let record = await this.getRecord("state", STATE_TTL);
-		if (
-			longPoll && !Number.isNaN(sinceVersion) &&
-			(!record || record.version <= sinceVersion)
-		) {
-			await createWaiter(this.stateWaiters, LONG_POLL_MAX_WAIT);
-			record = await this.getRecord("state", STATE_TTL);
+		if (longPoll && !Number.isNaN(sinceVersion)) {
+			// Register the waiter BEFORE re-checking, then wait in short chunks: a state
+			// posted between "check" and "wait" would otherwise miss the wake-up and stall
+			// the client for the whole wait budget - turns arrived late because of that.
+			const deadline = Date.now() + LONG_POLL_MAX_WAIT;
+			while ((!record || record.version <= sinceVersion) && Date.now() < deadline) {
+				const wakeUp = createWaiter(
+					this.stateWaiters,
+					Math.min(1_500, deadline - Date.now()),
+				);
+				record = await this.getRecord("state", STATE_TTL);
+				if (record && record.version > sinceVersion) {
+					break; // the registered waiter times out harmlessly
+				}
+				await wakeUp;
+				record = await this.getRecord("state", STATE_TTL);
+			}
 		}
 		if (!record) {
 			return textResponse("Not found", 404, origin);
@@ -255,9 +266,23 @@ export class PokerTable {
 		}
 
 		let record = await this.getRecord("action", ACTION_TTL);
-		if (longPoll && !record) {
-			await createWaiter(this.actionWaiters, LONG_POLL_MAX_WAIT);
-			record = await this.getRecord("action", ACTION_TTL);
+		if (longPoll) {
+			// Same register-then-recheck pattern as the state long-poll, so an action
+			// posted in the check-to-wait gap can't leave the host hanging for the
+			// whole wait budget.
+			const deadline = Date.now() + LONG_POLL_MAX_WAIT;
+			while (!record && Date.now() < deadline) {
+				const wakeUp = createWaiter(
+					this.actionWaiters,
+					Math.min(1_500, deadline - Date.now()),
+				);
+				record = await this.getRecord("action", ACTION_TTL);
+				if (record) {
+					break; // the registered waiter times out harmlessly
+				}
+				await wakeUp;
+				record = await this.getRecord("action", ACTION_TTL);
+			}
 		}
 		if (!record) {
 			return emptyResponse(origin);
