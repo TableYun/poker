@@ -1337,7 +1337,13 @@ main.own-focus .seat:not(.own-seat) .pill {
 
     main.own-focus .seat:not(.own-seat) {
         grid-row: auto;
-        width: 20vmin;
+        width: 23vw;
+    }
+
+    /* Other seats' cards get a width-based size on phones too - pure vmin made revealed
+       showdown cards about 23px, effectively invisible. */
+    main.own-focus .seat:not(.own-seat) .hole-cards img {
+        width: min(10vw, 40px);
     }
 
     main.own-focus #table-middle {

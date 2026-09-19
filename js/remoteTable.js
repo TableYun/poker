@@ -25,6 +25,7 @@ import {
 import { getSeatView, getTableView } from "./shared/syncViewModel.js";
 import { initSound, initSoundButton, playTurnChime } from "./shared/sound.js";
 import { initServiceWorker } from "./serviceWorkerRegistration.js";
+import { initCardImageRecovery } from "./shared/cardImageRecovery.js";
 import { APP_VERSION } from "./version.js";
 import {
 	clearChipTransferAnimation,
@@ -314,6 +315,7 @@ function init() {
 // Phones usually open only this page, so register the service worker here too - it
 // precaches every card face, which stops cards from showing up blank when a single
 // SVG fails to load over mobile data.
+initCardImageRecovery();
 initServiceWorker({
 	useServiceWorker: true,
 	serviceWorkerVersion: APP_VERSION,

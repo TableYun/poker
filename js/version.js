@@ -10,9 +10,19 @@ Version log writing guide:
 - Add optional contributor credits as dedicated metadata instead of release notes.
 */
 
-export const APP_VERSION = "1.9.16";
+export const APP_VERSION = "1.9.17";
 
 export const VERSION_LOG = [
+	{
+		version: "1.9.17",
+		date: "2026-09-19",
+		title: "빈 카드 근절과 모바일 가독성",
+		notes: [
+			"화면 갱신 때마다 카드 그림을 새로 불러오던 방식을 고쳐, 진행 중에 카드가 하얗게 비는 현상을 없앴습니다. 실패한 카드 그림은 자동으로 다시 시도합니다.",
+			"휴대폰에서 커뮤니티 카드와 쇼다운 때 상대 카드가 훨씬 크게 표시되어 무늬와 숫자를 알아볼 수 있습니다.",
+		],
+		estimated: false,
+	},
 	{
 		version: "1.9.16",
 		date: "2026-09-19",

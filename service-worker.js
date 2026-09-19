@@ -76,8 +76,13 @@ const CORE_ASSETS = [
 
 self.addEventListener("install", (event) => {
 	self.skipWaiting();
+	// Precache best-effort: cache.addAll() is all-or-nothing, so one dropped fetch on a
+	// flaky mobile connection would abort the whole install and leave the device with no
+	// cache at all. Failed entries are simply filled in later by the runtime fetch handler.
 	event.waitUntil(
-		caches.open(CACHE_NAME).then((cache) => cache.addAll(CORE_ASSETS)),
+		caches.open(CACHE_NAME).then((cache) =>
+			Promise.allSettled(CORE_ASSETS.map((asset) => cache.add(asset)))
+		),
 	);
 });
 

@@ -363,21 +363,37 @@ export function renderChipStacks(playerList = []) {
 	});
 }
 
+// Card images are reused and only get a new src when the card actually changes. Recreating
+// or re-assigning them on every sync render made mobile browsers refetch mid-hand, which
+// could leave a card blank when a fetch was dropped.
 export function renderCommunityCards(cardSlots, cardCodes = []) {
 	cardSlots.forEach((slot, index) => {
 		const cardCode = cardCodes[index];
 		if (!cardCode) {
-			slot.innerHTML = "";
+			if (slot.firstChild) {
+				slot.replaceChildren();
+			}
 			return;
 		}
-		slot.innerHTML = `<img src="cards/${cardCode}.svg">`;
+		let img = slot.querySelector("img");
+		if (!img) {
+			img = document.createElement("img");
+			slot.replaceChildren(img);
+		}
+		const src = `cards/${cardCode}.svg`;
+		if (img.getAttribute("src") !== src) {
+			img.setAttribute("src", src);
+		}
 	});
 }
 
 export function renderSeatCards(cardEls, cardCodes = []) {
 	cardEls.forEach((cardEl, index) => {
 		const cardCode = cardCodes[index];
-		cardEl.src = cardCode ? `cards/${cardCode}.svg` : "cards/1B.svg";
+		const src = cardCode ? `cards/${cardCode}.svg` : "cards/1B.svg";
+		if (cardEl.getAttribute("src") !== src) {
+			cardEl.setAttribute("src", src);
+		}
 	});
 }
 

@@ -84,6 +84,7 @@ import {
 	renderSeatSetupState,
 } from "./shared/tableViewRenderer.js";
 import { initServiceWorker } from "./serviceWorkerRegistration.js";
+import { initCardImageRecovery } from "./shared/cardImageRecovery.js";
 import { APP_VERSION, VERSION_LOG } from "./version.js";
 
 /* --------------------------------------------------------------------------------------------------
@@ -4055,6 +4056,7 @@ const USE_SERVICE_WORKER = true;
 const SERVICE_WORKER_VERSION = APP_VERSION;
 const AUTO_RELOAD_ON_SW_UPDATE = true;
 
+initCardImageRecovery();
 initServiceWorker({
 	useServiceWorker: USE_SERVICE_WORKER,
 	serviceWorkerVersion: SERVICE_WORKER_VERSION,
