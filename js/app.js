@@ -85,7 +85,12 @@ import {
 } from "./shared/tableViewRenderer.js";
 import { initServiceWorker } from "./serviceWorkerRegistration.js";
 import { initCardImageRecovery } from "./shared/cardImageRecovery.js";
+import { installBackgroundResistantTimers } from "./shared/backgroundTimers.js";
 import { APP_VERSION, VERSION_LOG } from "./version.js";
+
+// The host tab runs the whole game engine on timers; install the worker-backed timers
+// first so bots keep acting and state keeps syncing even when this tab is not in front.
+installBackgroundResistantTimers();
 
 /* --------------------------------------------------------------------------------------------------
 Configuration And DOM References

@@ -10,9 +10,18 @@ Version log writing guide:
 - Add optional contributor credits as dedicated metadata instead of release notes.
 */
 
-export const APP_VERSION = "1.9.20";
+export const APP_VERSION = "1.9.21";
 
 export const VERSION_LOG = [
+	{
+		version: "1.9.21",
+		date: "2026-09-19",
+		title: "호스트 탭이 가려져도 게임 진행",
+		notes: [
+			"호스트(공유 테이블) 탭이 다른 탭 뒤에 있거나 보고 있지 않아도 봇 진행과 원격 동기화가 정상 속도로 계속됩니다. 이제 원격 화면만 보면서 플레이해도 게임이 멈추지 않습니다.",
+		],
+		estimated: false,
+	},
 	{
 		version: "1.9.20",
 		date: "2026-09-19",
