@@ -3721,8 +3721,12 @@ function applyBetweenHandsRosterChanges() {
 		enqueueNotification(`${player.name} 게임 참가.`);
 		logFlow("player_return", { name: player.name });
 	});
+	// The players array is dealer-rotated, so appending would drop the newcomer into an
+	// arbitrary spot in the turn order. Re-sort by physical seat instead - the dealer
+	// button then advances seat by seat from whoever still holds it.
 	gameState.players = (allowDepartures ? remaining : gameState.players.slice())
-		.concat(returning);
+		.concat(returning)
+		.sort((a, b) => a.seatSlot - b.seatSlot);
 }
 
 // A busted player (chips <= 0) can press rebuy at ANY time: seated ones (between hands)

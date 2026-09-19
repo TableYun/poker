@@ -10,9 +10,18 @@ Version log writing guide:
 - Add optional contributor credits as dedicated metadata instead of release notes.
 */
 
-export const APP_VERSION = "1.9.13";
+export const APP_VERSION = "1.9.14";
 
 export const VERSION_LOG = [
+	{
+		version: "1.9.14",
+		date: "2026-09-19",
+		title: "중간 참가자 턴 순서 수정",
+		notes: [
+			"게임 도중 참가하거나 복귀한 플레이어의 액션 순서가 좌석 위치와 어긋나던 문제를 고쳤습니다. 이제 턴은 항상 좌석 순서대로 돌아갑니다.",
+		],
+		estimated: false,
+	},
 	{
 		version: "1.9.13",
 		date: "2026-09-19",
