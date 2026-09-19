@@ -1212,26 +1212,27 @@ main .seat.own-seat.folded .hole-cards img {
     filter: none;
 }
 
-/* The player's own seat always shows both hole cards side by side - slightly smaller so the
-   pair fits the seat width - and keeps them readable after folding instead of stacking them. */
-main .seat.own-seat .hole-cards {
+/* Any seat with both card faces showing (own seat, showdown, bot reveals) lays the cards side
+   by side - slightly smaller so the pair fits the seat width - and keeps them that way after a
+   fold instead of stacking them back into one pile. */
+main .seat.revealed .hole-cards {
     white-space: nowrap;
 }
 
-main .seat.own-seat .hole-cards img {
+main .seat.revealed .hole-cards img {
     width: 8vmin;
 }
 
-main .seat.own-seat .hole-cards img:nth-of-type(2) {
+main .seat.revealed .hole-cards img:nth-of-type(2) {
     position: static;
 }
 
-main .seat.own-seat.folded .hole-cards img:nth-of-type(1) {
+main .seat.revealed.folded .hole-cards img:nth-of-type(1) {
     margin: 0.5vmin;
     transform: rotate(-2deg);
 }
 
-main .seat.own-seat.folded .hole-cards img:nth-of-type(2) {
+main .seat.revealed.folded .hole-cards img:nth-of-type(2) {
     margin: 0.5vmin;
     transform: rotate(3deg);
 }

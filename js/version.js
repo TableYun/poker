@@ -10,9 +10,20 @@ Version log writing guide:
 - Add optional contributor credits as dedicated metadata instead of release notes.
 */
 
-export const APP_VERSION = "1.9.3";
+export const APP_VERSION = "1.9.4";
 
 export const VERSION_LOG = [
+	{
+		version: "1.9.4",
+		date: "2026-09-19",
+		title: "공개된 카드가 두 장 모두 보이게 개선",
+		notes: [
+			"내 좌석의 카드 두 장이 겹치지 않고 나란히 보이며, 폴드한 뒤에도 그대로 확인할 수 있습니다.",
+			"쇼다운이나 봇이 카드를 공개할 때도 두 장이 나란히 펼쳐져 승자의 패를 바로 알 수 있습니다.",
+			"아웃 표시가 좌석 구석에서 잘리지 않고 카드 위 중앙에 한 줄로 나옵니다.",
+		],
+		estimated: false,
+	},
 	{
 		version: "1.9.3",
 		date: "2026-09-19",

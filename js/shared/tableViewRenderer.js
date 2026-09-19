@@ -381,6 +381,13 @@ export function renderSeatCards(cardEls, cardCodes = []) {
 	});
 }
 
+// A seat whose two hole-card faces are both showing (own seat, open-cards mode, bot reveals,
+// showdown) gets the "revealed" class so CSS can lay the cards side by side instead of stacked.
+function renderSeatRevealedState(seatRef, cardCodes) {
+	const revealed = Array.isArray(cardCodes) && cardCodes.filter(Boolean).length === 2;
+	seatRef.seatEl.classList.toggle("revealed", revealed);
+}
+
 export function renderSeatPill(el, label, shouldShow = true) {
 	if (!el) {
 		return;
@@ -578,6 +585,7 @@ export function clearRenderedSeat(seatRef) {
 	seatRef.seatEl.classList.remove(
 		"active",
 		"own-seat",
+		"revealed",
 		"folded",
 		"checked",
 		"called",
@@ -612,6 +620,7 @@ export function renderHostSeat(seatRef, seatState = {}) {
 	seatRef.seatEl.classList.toggle("own-seat", seatState.isHuman === true);
 	renderSeatActiveState(seatRef, seatState.active === true);
 	renderSeatCards(seatRef.cardEls, seatState.visibleCardCodes);
+	renderSeatRevealedState(seatRef, seatState.visibleCardCodes);
 	renderSeatPill(seatRef.handStrengthEl, seatState.handStrengthLabel || "");
 	renderSeatPill(seatRef.outsEl, seatState.outsLabel || "");
 	renderSeatPill(seatRef.winProbabilityEl, seatState.winProbabilityLabel || "");
@@ -663,6 +672,7 @@ export function renderProjectedSeat(
 	seatRef.smallBlindEl.classList.toggle("hidden", publicSeat.smallBlind !== true);
 	seatRef.bigBlindEl.classList.toggle("hidden", publicSeat.bigBlind !== true);
 	renderSeatCards(seatRef.cardEls, holeCards);
+	renderSeatRevealedState(seatRef, holeCards);
 	renderSeatPill(seatRef.handStrengthEl, handStrengthLabel);
 	renderSeatPill(seatRef.outsEl, outsLabel || "");
 	renderSeatPill(
