@@ -262,10 +262,13 @@ export class PokerTable {
 		if (!record) {
 			return emptyResponse(origin);
 		}
-		await this.ctx.storage.delete("action");
 		if (record.turnToken !== turnToken) {
+			// A stale long-poll from an earlier turn must never eat a fresh action - leave
+			// it for the poller holding the current token. A new action overwrites the
+			// record anyway, and the TTL cleans up abandoned ones.
 			return emptyResponse(origin);
 		}
+		await this.ctx.storage.delete("action");
 		const { storedAtMs: _storedAtMs, ...payload } = record;
 		return jsonResponse(payload, origin);
 	}
