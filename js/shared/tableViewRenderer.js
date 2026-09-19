@@ -645,7 +645,7 @@ export function renderProjectedSeat(
 	publicSeat,
 	{ activeSeatIndex = null, ownSeatIndex = null, ownSeatView = null } = {},
 ) {
-	const isOwnSeat = publicSeat.seatIndex === ownSeatIndex && ownSeatView;
+	const isOwnSeat = publicSeat.seatIndex === ownSeatIndex && Boolean(ownSeatView);
 	const holeCards = isOwnSeat ? ownSeatView.holeCards : publicSeat.publicHoleCards;
 	const handStrengthLabel = isOwnSeat
 		? ownSeatView.handStrengthLabel
