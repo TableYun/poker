@@ -1789,3 +1789,69 @@ MEDIA QUERIES
         min-width: 0;
     }
 }
+
+/* --------------------------------------------------------------------------------------------------
+Chat panel (bottom-left on the host table and remote views)
+-------------------------------------------------------------------------------------------------- */
+
+.chat-panel {
+    position: fixed;
+    left: 10px;
+    bottom: 10px;
+    width: min(280px, 55vw);
+    z-index: 3000;
+    background: hsla(221, 39%, 14%, 0.88);
+    border-radius: 12px;
+    padding: 8px;
+    box-shadow: var(--shadow);
+}
+
+.chat-messages {
+    max-height: 140px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin-bottom: 6px;
+    font-size: 0.78rem;
+    text-align: left;
+    overflow-wrap: anywhere;
+}
+
+.chat-messages:empty {
+    display: none;
+}
+
+.chat-line strong {
+    color: var(--yellow);
+    font-weight: normal;
+    margin-right: 5px;
+}
+
+.chat-form {
+    display: flex;
+    gap: 5px;
+}
+
+.chat-form input {
+    flex: 1 1 auto;
+    min-width: 0;
+    border: none;
+    border-radius: 8px;
+    padding: 5px 9px;
+    background: var(--blue);
+    color: var(--font-color);
+    font-family: inherit;
+    font-size: 0.8rem;
+}
+
+.chat-form input:focus {
+    outline: 1px solid var(--yellow);
+}
+
+.chat-form button {
+    width: auto;
+    margin: 0;
+    padding: 4px 12px;
+    font-size: 0.75rem;
+}

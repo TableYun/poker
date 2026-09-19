@@ -26,6 +26,7 @@ import { getSeatView, getTableView } from "./shared/syncViewModel.js";
 import { initSound, initSoundButton, playTurnChime } from "./shared/sound.js";
 import { initServiceWorker } from "./serviceWorkerRegistration.js";
 import { initCardImageRecovery } from "./shared/cardImageRecovery.js";
+import { createChatPanel } from "./shared/chatPanel.js";
 import { APP_VERSION } from "./version.js";
 import {
 	clearChipTransferAnimation,
@@ -86,12 +87,14 @@ const tableId = urlParams.get("tableId") || "";
 const seatIndexParam = parseOptionalInt(urlParams.get("seatIndex"));
 const STATE_ENDPOINT = "https://poker-sync.tableyun.workers.dev/state";
 const ACTION_ENDPOINT = "https://poker-sync.tableyun.workers.dev/action";
+const CHAT_ENDPOINT = "https://poker-sync.tableyun.workers.dev/chat";
 const REFRESH_INTERVAL = 2000;
 const ACTION_STEP = 10;
 const DEFAULT_NOTIFICATION = "업데이트를 기다리는 중...";
 const STATE_WATCHDOG_MS = 30_000;
 let lastVersion = 0;
 let lastStateAt = 0;
+let ownName = "";
 let preFoldArmed = false;
 let preFoldHandKey = "";
 let pollTimeoutId = null;
@@ -127,6 +130,12 @@ const actionControls = createSeatActionControls({
 	incrementButton: amountIncrementButton,
 	onActionError: () => setNotification("액션 요청이 실패했습니다."),
 	onNewTurn: () => playTurnChime(),
+});
+
+const chatPanel = createChatPanel({
+	chatEndpoint: CHAT_ENDPOINT,
+	tableId,
+	getSenderName: () => ownName || "게스트",
 });
 
 function setNotification(message) {
@@ -201,6 +210,9 @@ function applyRemoteState(payload) {
 		return;
 	}
 
+	ownName = seatView.name || ownName;
+	chatPanel.applyChat(payload.chat);
+	chatPanel.setVisible(true);
 	const pendingAction = getSeatPendingAction(tableView, seatIndexParam);
 	const showTurnControls = shouldShowSeatActionControls(seatView, pendingAction, seatIndexParam);
 	const playersPublic = Array.isArray(tableView.playersPublic) ? tableView.playersPublic : [];
@@ -276,7 +288,7 @@ async function pollState() {
 		// the request count against the sync server low.
 		const url = `${STATE_ENDPOINT}?tableId=${
 			encodeURIComponent(tableId)
-		}&seatIndex=${seatIndexParam}&sinceVersion=${lastVersion}&wait=1`;
+		}&seatIndex=${seatIndexParam}&sinceVersion=${lastVersion}&sinceChat=${chatPanel.lastSeq}&wait=1`;
 		const res = await fetch(url, { cache: "no-store" });
 		if (res.status === 204) {
 			return;
@@ -336,6 +348,7 @@ function init() {
 	initSoundButton(soundButton);
 	document.addEventListener("visibilitychange", handleVisibilityChange);
 	actionControls.init();
+	chatPanel.init();
 	preFoldButton?.addEventListener("click", () => {
 		preFoldArmed = !preFoldArmed;
 		preFoldButton.classList.toggle("armed", preFoldArmed);

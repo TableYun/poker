@@ -86,6 +86,7 @@ import {
 import { initServiceWorker } from "./serviceWorkerRegistration.js";
 import { initCardImageRecovery } from "./shared/cardImageRecovery.js";
 import { installBackgroundResistantTimers } from "./shared/backgroundTimers.js";
+import { createChatPanel } from "./shared/chatPanel.js";
 import { APP_VERSION, VERSION_LOG } from "./version.js";
 
 // The host tab runs the whole game engine on timers; install the worker-backed timers
@@ -268,6 +269,7 @@ if (SPEED_MODE) {
 
 const STATE_SYNC_ENDPOINT = "https://poker-sync.tableyun.workers.dev/state";
 const ACTION_SYNC_ENDPOINT = "https://poker-sync.tableyun.workers.dev/action";
+const CHAT_SYNC_ENDPOINT = "https://poker-sync.tableyun.workers.dev/chat";
 let tableId = null;
 const STATE_SYNC_DELAY = 750;
 const ACTION_POLL_INTERVAL = 1000;
@@ -1051,6 +1053,7 @@ function restoreTableUrl(savedTableId) {
 }
 
 function resumeRestoredFlow(flowState = {}) {
+	setupHostChatPanel();
 	setCurrentFlowState(flowState);
 	if (flowState.type === "chip-transfer") {
 		gameState.chipTransfer = null;
@@ -2213,6 +2216,29 @@ setInterval(() => {
 	sendTableState();
 }, 5000);
 
+let hostChatPanel = null;
+
+function getHostChatSenderName() {
+	const humans = gameState.allPlayers.filter((p) => p.isBot !== true);
+	return humans.length === 1 ? humans[0].name : "호스트";
+}
+
+// The host's chat panel is (re)created when a synced game starts, so it binds to the
+// game's current table id. Incoming messages arrive with every state POST response.
+function setupHostChatPanel() {
+	if (!hasStateSyncEnabled()) {
+		hostChatPanel?.setVisible(false);
+		return;
+	}
+	hostChatPanel = createChatPanel({
+		chatEndpoint: CHAT_SYNC_ENDPOINT,
+		tableId,
+		getSenderName: getHostChatSenderName,
+	});
+	hostChatPanel.init();
+	hostChatPanel.setVisible(true);
+}
+
 async function sendTableState() {
 	lastStateSendAttemptAt = Date.now();
 	// Building the payload happens inside its own guard: an exception here (e.g. a hand
@@ -2223,6 +2249,7 @@ async function sendTableState() {
 	try {
 		payload = {
 			tableId: tableId,
+			sinceChat: hostChatPanel?.lastSeq ?? 0,
 			view: buildSyncView(gameState, notifArr.slice(0, MAX_ITEMS)),
 		};
 	} catch (error) {
@@ -2241,6 +2268,8 @@ async function sendTableState() {
 		if (!res.ok) {
 			throw new Error(`state sync failed with status ${res.status}`);
 		}
+		const body = await res.json().catch(() => null);
+		hostChatPanel?.applyChat(body?.chat);
 	} catch (error) {
 		logFlow("state sync failed", error);
 		queueStateSync();
@@ -2593,6 +2622,7 @@ function startGame() {
 			closeAllOverlays();
 			gameState.gameStarted = true;
 			initStateSyncForGame();
+			setupHostChatPanel();
 
 			preFlop();
 		} else {

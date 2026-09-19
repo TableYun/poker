@@ -97,10 +97,51 @@ export class PokerTable {
 		return record;
 	}
 
+	async getChat() {
+		return await this.ctx.storage.get("chat") ?? { seq: 0, messages: [] };
+	}
+
+	// Chat rides along with the existing state traffic: reads attach anything newer
+	// than the caller's sinceChat, so no extra polling requests are needed.
+	buildChatTail(chat, sinceChat) {
+		return {
+			seq: chat.seq,
+			messages: chat.messages.filter((message) => message.id > sinceChat),
+		};
+	}
+
+	async handlePostChat(request, origin) {
+		let data;
+		try {
+			data = await request.json();
+		} catch {
+			return textResponse("Invalid JSON", 400, origin);
+		}
+		const name = typeof data?.name === "string" ? data.name.trim().slice(0, 20) : "";
+		const text = typeof data?.text === "string" ? data.text.trim().slice(0, 200) : "";
+		if (!name || !text) {
+			return textResponse("Missing name or text", 400, origin);
+		}
+		const chat = await this.getChat();
+		chat.seq += 1;
+		chat.messages.push({ id: chat.seq, name, text, at: Date.now() });
+		if (chat.messages.length > 50) {
+			chat.messages.splice(0, chat.messages.length - 50);
+		}
+		await this.ctx.storage.put("chat", chat);
+		return jsonResponse({ ok: true, seq: chat.seq }, origin);
+	}
+
 	async fetch(request) {
 		const url = new URL(request.url);
 		const origin = request.headers.get("origin");
 
+		if (url.pathname === "/chat") {
+			if (request.method === "POST") {
+				return this.handlePostChat(request, origin);
+			}
+			return textResponse("Method not allowed", 405, origin);
+		}
 		if (url.pathname === "/state") {
 			if (request.method === "GET") {
 				return this.handleGetState(url, origin);
@@ -142,11 +183,13 @@ export class PokerTable {
 			schemaVersion: SYNC_VIEW_SCHEMA_VERSION,
 		};
 		await this.ctx.storage.put("state", record);
+		const chat = await this.getChat();
 		return jsonResponse({
 			ok: true,
 			version: record.version,
 			updatedAt: record.updatedAt,
 			schemaVersion: record.schemaVersion,
+			chat: this.buildChatTail(chat, parseInteger(data?.sinceChat) ?? 0),
 		}, origin);
 	}
 
@@ -154,6 +197,8 @@ export class PokerTable {
 		const seatIndex = parseInteger(url.searchParams.get("seatIndex"));
 		const sinceParam = url.searchParams.get("sinceVersion");
 		const sinceVersion = sinceParam ? Number.parseInt(sinceParam, 10) : 0;
+
+		const sinceChat = parseInteger(url.searchParams.get("sinceChat")) ?? 0;
 
 		if (seatIndex === null) {
 			return textResponse("Missing seatIndex", 400, origin);
@@ -173,9 +218,14 @@ export class PokerTable {
 		if (!payload) {
 			return textResponse("Seat not found", 404, origin);
 		}
-		if (!Number.isNaN(sinceVersion) && record.version <= sinceVersion) {
+		const chat = await this.getChat();
+		if (
+			!Number.isNaN(sinceVersion) && record.version <= sinceVersion &&
+			chat.seq <= sinceChat
+		) {
 			return emptyResponse(origin);
 		}
+		payload.chat = this.buildChatTail(chat, sinceChat);
 		return jsonResponse(payload, origin);
 	}
 
@@ -250,7 +300,10 @@ async function routeRequest(request, env) {
 			request.headers.get("origin"),
 		);
 	}
-	if (url.pathname !== "/state" && url.pathname !== "/action") {
+	if (
+		url.pathname !== "/state" && url.pathname !== "/action" &&
+		url.pathname !== "/chat"
+	) {
 		return textResponse("Not found", 404, request.headers.get("origin"));
 	}
 
