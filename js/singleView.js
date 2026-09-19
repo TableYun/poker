@@ -51,6 +51,7 @@ const singleAmountSlider = document.getElementById("single-amount-slider");
 const singleAmountIncrementButton = document.getElementById("single-amount-increment-button");
 const singleSliderOutput = document.getElementById("single-slider-output");
 const singleSwitchLink = document.getElementById("single-switch-link");
+const preFoldButton = document.getElementById("prefold-button");
 const soundButton = document.getElementById("sound-button");
 const onlineOnlyElements = [betEl, potEl, singleActionPanelEl];
 const urlParams = new URLSearchParams(globalThis.location.search);
@@ -62,6 +63,8 @@ const ACTION_STEP = 10;
 const STATE_WATCHDOG_MS = 30_000;
 let lastVersion = 0;
 let lastStateAt = 0;
+let preFoldArmed = false;
+let preFoldHandKey = "";
 let pollTimeoutId = null;
 let isPolling = false;
 let hasSyncedState = false;
@@ -123,6 +126,11 @@ function init() {
 	document.addEventListener("touchstart", function () {}, false);
 	document.addEventListener("visibilitychange", handleVisibilityChange);
 	actionControls.init();
+	preFoldButton?.addEventListener("click", () => {
+		preFoldArmed = !preFoldArmed;
+		preFoldButton.classList.toggle("armed", preFoldArmed);
+		preFoldButton.textContent = preFoldArmed ? "폴드 예약됨 - 취소하려면 누르세요" : "폴드 예약";
+	}, false);
 	configureViewSwitchLink(singleSwitchLink, "remoteTable.html", tableId, seatIndexParam);
 	clearSyncedDisplays();
 	applyParams();
@@ -304,6 +312,31 @@ function handleVisibilityChange() {
 	}
 }
 
+// Pre-fold: while waiting for the turn the player can arm an automatic fold, which
+// fires the moment the turn reaches them. A new set of hole cards clears it.
+function updatePreFold(seatView, showTurnControls) {
+	if (!preFoldButton) {
+		return;
+	}
+	const holeKey = Array.isArray(seatView.holeCards) ? seatView.holeCards.join(",") : "";
+	if (holeKey !== preFoldHandKey) {
+		preFoldHandKey = holeKey;
+		preFoldArmed = false;
+	}
+	const inHand = seatView.folded !== true && seatView.allIn !== true &&
+		Array.isArray(seatView.holeCards) && seatView.holeCards.every(Boolean);
+	if (!inHand) {
+		preFoldArmed = false;
+	}
+	if (preFoldArmed && showTurnControls) {
+		preFoldArmed = false;
+		actionControls.requestFold();
+	}
+	preFoldButton.classList.toggle("hidden", !inHand || showTurnControls);
+	preFoldButton.classList.toggle("armed", preFoldArmed);
+	preFoldButton.textContent = preFoldArmed ? "폴드 예약됨 - 취소하려면 누르세요" : "폴드 예약";
+}
+
 function applyRemoteState(payload) {
 	const tableView = getTableView(payload);
 	const seatView = getSeatView(payload);
@@ -328,6 +361,7 @@ function applyRemoteState(payload) {
 	renderOuts(seatView.outsLabel || "");
 	renderWinProbability(seatView.winProbability, seatView.showWinProbability === true);
 	actionControls.render(seatView, pendingAction);
+	updatePreFold(seatView, showTurnControls);
 	setViewSwitchLinkVisible(singleSwitchLink, !showTurnControls);
 	return true;
 }

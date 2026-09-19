@@ -111,6 +111,7 @@ const rotateIcons = document.querySelectorAll(".seat .rotate");
 const closeButtons = document.querySelectorAll(".close");
 const rebuyButtons = document.querySelectorAll(".rebuy");
 const awayButtons = document.querySelectorAll(".away");
+const addBotButtons = document.querySelectorAll(".add-bot");
 const tableMainEl = document.querySelector("main");
 const notification = document.querySelector("#notification");
 const foldButton = document.querySelector("#fold-button");
@@ -174,6 +175,7 @@ const seatRefs = Array.from(document.querySelectorAll(".seat")).map((
 	closeEl: seatEl.querySelector(".close"),
 	rebuyEl: seatEl.querySelector(".rebuy"),
 	awayEl: seatEl.querySelector(".away"),
+	addBotEl: seatEl.querySelector(".add-bot"),
 	winProbabilityEl: seatEl.querySelector(".win-probability"),
 	handStrengthEl: seatEl.querySelector(".hand-strength"),
 	outsEl: seatEl.querySelector(".outs"),
@@ -2779,9 +2781,9 @@ function preFlop() {
 
 	nextHandPlan.bustedPlayers.forEach((player) => {
 		if (player.isBot) {
-			// Busted bots leave the table for good.
-			renderSeatSetupState(getSeatRef(player), { visible: false });
-			enqueueNotification(`${player.name} 탈락!`);
+			// Busted bots leave, but their seat opens up for a new name or a fresh bot.
+			freeBotSeat(player);
+			enqueueNotification(`${player.name} 탈락! – 빈 자리에 이름 입력 또는 봇 추가 가능.`);
 		} else {
 			// Busted humans keep their seat and can press the rebuy button at any time
 			// to return with a fresh stack on the next hand.
@@ -3813,10 +3815,19 @@ function updateSeatManagementControls() {
 	});
 	seatRefs.forEach((seatRef) => {
 		seatRef.awayEl?.classList.add("hidden");
+		seatRef.addBotEl?.classList.add("hidden");
 	});
 	if (!gameState.gameStarted || gameState.gameFinished) {
 		return;
 	}
+	// Open seats (no roster member) can take a fresh bot at any time.
+	seatRefs.forEach((seatRef) => {
+		const seatTaken = gameState.allPlayers.some((p) => p.seatSlot === seatRef.seatSlot);
+		seatRef.addBotEl?.classList.toggle(
+			"hidden",
+			seatTaken || seatRef.seatEl.classList.contains("hidden"),
+		);
+	});
 	gameState.allPlayers.forEach((player) => {
 		const seatRef = getSeatRef(player);
 		if (!seatRef) {
@@ -3901,6 +3912,44 @@ function toggleBotPendingRemoval(seatRef) {
 		name: player.name,
 		pending: player.pendingRemoval,
 	});
+	saveCurrentGameSnapshot();
+}
+
+function pickAvailableBotName() {
+	const usedNames = new Set(gameState.allPlayers.map((p) => p.name));
+	const candidate = shuffleArray(BOT_NAME_POOL.slice())
+		.find((name) => !usedNames.has(name));
+	return candidate ?? `봇 ${getNextRosterSeatIndex() + 1}`;
+}
+
+// Puts a fresh bot on an open seat; it joins the game on the next hand through the
+// same between-hands roster merge that seats returning players.
+function handleAddBotClick(ev) {
+	const seatEl = ev.currentTarget.closest(".seat");
+	const seatRef = seatRefs.find((currentSeatRef) => currentSeatRef.seatEl === seatEl);
+	if (
+		!seatRef || !gameState.gameStarted || gameState.gameFinished ||
+		getRosterPlayerBySeatSlot(seatRef.seatSlot)
+	) {
+		return;
+	}
+	const bot = createPlayerState({
+		name: pickAvailableBotName(),
+		isBot: true,
+		seatSlot: seatRef.seatSlot,
+		seatIndex: getNextRosterSeatIndex(),
+	});
+	gameState.allPlayers.push(bot);
+	bindSeatRefPlayer(bot);
+	seatRef.seatEl.classList.remove("joinable");
+	seatRef.nameEl.textContent = bot.name;
+	renderSeatSetupState(seatRef, { isBot: true, nameEditable: false });
+	seatRef.seatEl.classList.add("sitting-out");
+	renderPlayerSeat(bot);
+	updateSeatManagementControls();
+	enqueueNotification(`${bot.name} 봇 추가 – 다음 핸드부터 참가합니다.`);
+	logFlow("bot_added", { name: bot.name });
+	queueStateSync();
 	saveCurrentGameSnapshot();
 }
 
@@ -4062,6 +4111,9 @@ function init() {
 	}
 	for (const awayButton of awayButtons) {
 		awayButton.addEventListener("click", handleAwayToggleClick, false);
+	}
+	for (const addBotButton of addBotButtons) {
+		addBotButton.addEventListener("click", handleAddBotClick, false);
 	}
 
 	const savedGameSnapshot = readSavedGameSnapshot();

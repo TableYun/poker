@@ -61,6 +61,7 @@ const amountSlider = document.getElementById("amount-slider");
 const amountIncrementButton = document.getElementById("amount-increment-button");
 const sliderOutput = document.querySelector("output");
 const remoteSwitchLink = document.getElementById("remote-switch-link");
+const preFoldButton = document.getElementById("prefold-button");
 const soundButton = document.getElementById("sound-button");
 const seatRefs = Array.from(document.querySelectorAll(".seat")).map((seatEl, seatSlot) => ({
 	seatSlot,
@@ -91,6 +92,8 @@ const DEFAULT_NOTIFICATION = "업데이트를 기다리는 중...";
 const STATE_WATCHDOG_MS = 30_000;
 let lastVersion = 0;
 let lastStateAt = 0;
+let preFoldArmed = false;
+let preFoldHandKey = "";
 let pollTimeoutId = null;
 let isPolling = false;
 
@@ -158,6 +161,32 @@ function getRemotePlayerRenderData(playersPublic = []) {
 		.filter((player) => player !== null);
 }
 
+// Pre-fold: while waiting for the turn the player can arm an automatic fold, which
+// fires the moment the turn reaches them. Re-arms nothing across hands - a new set of
+// hole cards clears it.
+function updatePreFold(seatView, showTurnControls) {
+	if (!preFoldButton) {
+		return;
+	}
+	const holeKey = Array.isArray(seatView.holeCards) ? seatView.holeCards.join(",") : "";
+	if (holeKey !== preFoldHandKey) {
+		preFoldHandKey = holeKey;
+		preFoldArmed = false;
+	}
+	const inHand = seatView.folded !== true && seatView.allIn !== true &&
+		Array.isArray(seatView.holeCards) && seatView.holeCards.every(Boolean);
+	if (!inHand) {
+		preFoldArmed = false;
+	}
+	if (preFoldArmed && showTurnControls) {
+		preFoldArmed = false;
+		actionControls.requestFold();
+	}
+	preFoldButton.classList.toggle("hidden", !inHand || showTurnControls);
+	preFoldButton.classList.toggle("armed", preFoldArmed);
+	preFoldButton.textContent = preFoldArmed ? "폴드 예약됨 - 취소하려면 누르세요" : "폴드 예약";
+}
+
 function applyRemoteState(payload) {
 	const tableView = getTableView(payload);
 	const seatView = getSeatView(payload);
@@ -222,6 +251,7 @@ function applyRemoteState(payload) {
 	}
 	renderCommunityCards(communityCardSlots, tableView.communityCards);
 	actionControls.render(seatView, pendingAction);
+	updatePreFold(seatView, showTurnControls);
 	setViewSwitchLinkVisible(remoteSwitchLink, !showTurnControls);
 	renderNotifications(tableView.notifications);
 }
@@ -306,6 +336,11 @@ function init() {
 	initSoundButton(soundButton);
 	document.addEventListener("visibilitychange", handleVisibilityChange);
 	actionControls.init();
+	preFoldButton?.addEventListener("click", () => {
+		preFoldArmed = !preFoldArmed;
+		preFoldButton.classList.toggle("armed", preFoldArmed);
+		preFoldButton.textContent = preFoldArmed ? "폴드 예약됨 - 취소하려면 누르세요" : "폴드 예약";
+	}, false);
 	// view=cards marks a deliberate switch to the card view, so it doesn't bounce back here.
 	configureViewSwitchLink(remoteSwitchLink, "hole-cards.html", tableId, seatIndexParam, {
 		view: "cards",

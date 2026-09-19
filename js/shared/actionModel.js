@@ -51,12 +51,12 @@ export function getActionButtonLabel(amount, actionState) {
 		return "체크";
 	}
 	if (amount === actionState.maxAmount) {
-		return "올인";
+		return `올인 $${amount}`;
 	}
 	if (amount === actionState.needToCall) {
-		return "콜";
+		return `콜 $${amount}`;
 	}
-	return "레이즈";
+	return `레이즈 $${amount}`;
 }
 
 export function clampActionAmount(amount, actionState) {

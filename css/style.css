@@ -1503,6 +1503,44 @@ main.own-focus .seat:not(.own-seat) .pill {
     }
 }
 
+/* Bot-add button on open seats, centered on the empty cards. */
+.hole-cards .add-bot {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2200;
+    width: auto;
+    margin: 0;
+    padding: 0.8vmin 2vmin;
+    font-size: 0.75rem;
+    white-space: nowrap;
+}
+
+/* Pre-fold toggle on the synced seat views: neutral while waiting, red when armed. */
+#prefold-button {
+    width: auto;
+    white-space: nowrap;
+    background-color: var(--blue);
+    color: var(--font-color);
+    border: 1px solid var(--font-color);
+    font-size: 0.9rem;
+}
+
+#prefold-button.armed {
+    background-color: hsl(0, 70%, 55%);
+    color: #fff;
+    border-color: transparent;
+}
+
+/* Action button labels now carry amounts ("콜 $250"), so they size to their text. */
+#action-button,
+#single-action-button {
+    width: auto;
+    min-width: clamp(71px, 18vw, 138px);
+    white-space: nowrap;
+}
+
 /* Away/return toggle on human seats, tucked under the hole cards. */
 .hole-cards .away {
     position: absolute;

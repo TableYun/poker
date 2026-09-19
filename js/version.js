@@ -10,9 +10,20 @@ Version log writing guide:
 - Add optional contributor credits as dedicated metadata instead of release notes.
 */
 
-export const APP_VERSION = "1.9.22";
+export const APP_VERSION = "1.9.23";
 
 export const VERSION_LOG = [
+	{
+		version: "1.9.23",
+		date: "2026-09-20",
+		title: "콜 금액 표시·폴드 예약·봇 추가",
+		notes: [
+			"콜·레이즈·올인 버튼에 금액이 함께 표시됩니다 (예: “콜 $250”).",
+			"원격 화면에서 내 차례를 기다리는 동안 “폴드 예약”을 눌러두면 차례가 오는 즉시 자동으로 폴드됩니다. 새 핸드가 시작되면 예약은 풀립니다.",
+			"봇이 파산하면 좌석이 비워지고, 빈 좌석에는 이름 입력으로 사람이 들어오거나 “봇 추가” 버튼으로 새 봇을 앉힐 수 있습니다.",
+		],
+		estimated: false,
+	},
 	{
 		version: "1.9.22",
 		date: "2026-09-19",

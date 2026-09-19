@@ -628,9 +628,15 @@ export function createSeatActionControls({
 		});
 	}
 
+	// Used by the pre-fold feature: folds the current turn if one is active, no-op otherwise.
+	function requestFold() {
+		submitActionRequest({ action: "fold" });
+	}
+
 	return {
 		init,
 		hide,
 		render,
+		requestFold,
 	};
 }
