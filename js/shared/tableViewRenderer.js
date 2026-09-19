@@ -577,6 +577,7 @@ export function clearRenderedSeat(seatRef) {
 	seatRef.seatEl.classList.add("hidden");
 	seatRef.seatEl.classList.remove(
 		"active",
+		"own-seat",
 		"folded",
 		"checked",
 		"called",
@@ -607,6 +608,8 @@ export function renderHostSeat(seatRef, seatState = {}) {
 	seatRef.dealerEl.classList.toggle("hidden", seatState.dealer !== true);
 	seatRef.smallBlindEl.classList.toggle("hidden", seatState.smallBlind !== true);
 	seatRef.bigBlindEl.classList.toggle("hidden", seatState.bigBlind !== true);
+	// Human seats reuse the remote view's "own-seat" styling: spread, full-brightness hole cards.
+	seatRef.seatEl.classList.toggle("own-seat", seatState.isHuman === true);
 	renderSeatActiveState(seatRef, seatState.active === true);
 	renderSeatCards(seatRef.cardEls, seatState.visibleCardCodes);
 	renderSeatPill(seatRef.handStrengthEl, seatState.handStrengthLabel || "");

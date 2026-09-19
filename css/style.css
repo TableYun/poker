@@ -1212,6 +1212,30 @@ main .seat.own-seat.folded .hole-cards img {
     filter: none;
 }
 
+/* The player's own seat always shows both hole cards side by side - slightly smaller so the
+   pair fits the seat width - and keeps them readable after folding instead of stacking them. */
+main .seat.own-seat .hole-cards {
+    white-space: nowrap;
+}
+
+main .seat.own-seat .hole-cards img {
+    width: 8vmin;
+}
+
+main .seat.own-seat .hole-cards img:nth-of-type(2) {
+    position: static;
+}
+
+main .seat.own-seat.folded .hole-cards img:nth-of-type(1) {
+    margin: 0.5vmin;
+    transform: rotate(-2deg);
+}
+
+main .seat.own-seat.folded .hole-cards img:nth-of-type(2) {
+    margin: 0.5vmin;
+    transform: rotate(3deg);
+}
+
 .hole-cards .qr {
     display: flex;
     flex-direction: column;
@@ -1428,9 +1452,14 @@ main .seat.own-seat.folded .hole-cards img {
     bottom: 10px;
 }
 
+/* Centered across the top edge of the hole cards so the label stays readable instead of
+   getting clipped in the seat corner. */
 .outs {
-    top: 0px;
-    left: 0px;
+    top: -1.5vmin;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    font-size: 0.7rem;
     background-color: var(--yellow);
 }
 
@@ -1439,10 +1468,6 @@ main .seat.own-seat.folded .hole-cards img {
 }
 
 .folded .hand-strength {
-    transform: translateX(3.5vmin);
-}
-
-.folded .outs {
     transform: translateX(3.5vmin);
 }
 

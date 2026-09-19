@@ -1293,6 +1293,7 @@ function buildPlayerSeatState(
 		name: publicPlayerView.name,
 		chips: publicPlayerView.chips,
 		roundBet: publicPlayerView.roundBet,
+		isHuman: player.isBot !== true,
 		visibleCardCodes: publicPlayerView.publicHoleCards,
 		dealer: publicPlayerView.dealer,
 		smallBlind: publicPlayerView.smallBlind,
