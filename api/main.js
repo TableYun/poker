@@ -9,7 +9,18 @@ const allowedActionNames = new Set(["fold", "check", "call", "raise", "allin"]);
 const allowedOrigins = new Set([
 	primaryOrigin,
 	devOrigin,
+	"http://localhost:8734",
 ]);
+
+// Long polling: how long a ?wait=1 request may be held open, and how often the held
+// request re-checks KV for changes. Holding requests open slashes the request count
+// against Deno Deploy's usage limits compared to tight client-side polling.
+const LONG_POLL_MAX_WAIT = 20_000;
+const LONG_POLL_CHECK_INTERVAL = 750;
+
+function sleep(ms) {
+	return new Promise((resolve) => setTimeout(resolve, ms));
+}
 const baseCorsHeaders = {
 	"Access-Control-Allow-Methods": "GET, POST, OPTIONS",
 	"Access-Control-Allow-Headers": "Content-Type",
@@ -164,12 +175,25 @@ async function handleGetState(url, origin) {
 	const seatIndex = parseInteger(url.searchParams.get("seatIndex"));
 	const sinceParam = url.searchParams.get("sinceVersion");
 	const sinceVersion = sinceParam ? Number.parseInt(sinceParam, 10) : 0;
+	const longPoll = url.searchParams.get("wait") === "1";
 
 	if (seatIndex === null) {
 		return textResponse("Missing seatIndex", 400, origin);
 	}
 
-	const record = await getState(tableId);
+	let record = await getState(tableId);
+	if (longPoll && !Number.isNaN(sinceVersion)) {
+		// Hold the request open until the state moves past sinceVersion or the wait
+		// budget runs out; the client re-polls right away after each response.
+		const deadline = Date.now() + LONG_POLL_MAX_WAIT;
+		while (
+			(!record || record.version <= sinceVersion) &&
+			Date.now() < deadline
+		) {
+			await sleep(LONG_POLL_CHECK_INTERVAL);
+			record = await getState(tableId);
+		}
+	}
 	if (!record) {
 		return textResponse("Not found", 404, origin);
 	}
@@ -225,8 +249,22 @@ async function handlePostAction(request, origin) {
 async function handleGetAction(url, origin) {
 	const tableId = url.searchParams.get("tableId") || "default";
 	const turnToken = url.searchParams.get("turnToken")?.trim() || "";
+	const longPoll = url.searchParams.get("wait") === "1";
 	if (!turnToken) {
 		return textResponse("Missing turnToken", 400, origin);
+	}
+
+	if (longPoll) {
+		// Hold the request open until a pending action shows up (peek without consuming),
+		// so the host waiting on a remote player's turn barely costs any requests.
+		const deadline = Date.now() + LONG_POLL_MAX_WAIT;
+		while (Date.now() < deadline) {
+			const entry = await kv.get(getActionKey(tableId));
+			if (entry.value) {
+				break;
+			}
+			await sleep(LONG_POLL_CHECK_INTERVAL);
+		}
 	}
 
 	const record = await consumePendingAction(tableId, turnToken);

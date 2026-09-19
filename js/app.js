@@ -2132,9 +2132,11 @@ async function fetchPendingRemoteAction(turnToken) {
 	}
 
 	try {
+		// wait=1: the server holds the request open until the remote player acts, so
+		// waiting on a turn barely costs any requests.
 		const url = `${ACTION_SYNC_ENDPOINT}?tableId=${
 			encodeURIComponent(tableId)
-		}&turnToken=${encodeURIComponent(turnToken)}`;
+		}&turnToken=${encodeURIComponent(turnToken)}&wait=1`;
 		const res = await fetch(url, {
 			cache: "no-store",
 		});

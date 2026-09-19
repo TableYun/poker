@@ -231,8 +231,8 @@ function renderWinProbability(value, shouldShow) {
 	winProbabilityEl.classList.toggle("hidden", !showValue);
 }
 
-// Constant polling is intentional.
-// Poker tables have bursty activity; 204 does not imply inactivity ahead.
+// Constant polling is intentional; wait=1 asks the server to hold the request open until
+// the state changes, so idle polling costs very few requests against the sync server.
 async function pollState() {
 	if (
 		!tableId || seatIndexParam === null || isPolling || document.visibilityState !== "visible"
@@ -240,10 +240,11 @@ async function pollState() {
 		return;
 	}
 	isPolling = true;
+	const startedAt = Date.now();
 	try {
 		const url = `${STATE_ENDPOINT}?tableId=${
 			encodeURIComponent(tableId)
-		}&seatIndex=${seatIndexParam}&sinceVersion=${lastVersion}`;
+		}&seatIndex=${seatIndexParam}&sinceVersion=${lastVersion}&wait=1`;
 		const res = await fetch(url);
 		if (res.status === 204) {
 			setOnlineElementsVisible(hasSyncedState);
@@ -261,16 +262,21 @@ async function pollState() {
 		setOnlineElementsVisible(false);
 	} finally {
 		isPolling = false;
-		schedulePoll();
+		schedulePoll(startedAt);
 	}
 }
 
-function schedulePoll() {
+function schedulePoll(lastPollStartedAt = 0) {
 	if (document.visibilityState !== "visible") {
 		pollTimeoutId = null;
 		return;
 	}
-	pollTimeoutId = setTimeout(pollState, REFRESH_INTERVAL);
+	// A response that came back after a long server-side hold can be followed up right
+	// away; quick responses keep the normal spacing so a non-long-polling server or an
+	// error never turns this into a tight loop.
+	const elapsed = Date.now() - lastPollStartedAt;
+	const delay = Math.max(250, REFRESH_INTERVAL - elapsed);
+	pollTimeoutId = setTimeout(pollState, delay);
 }
 
 function handleVisibilityChange() {

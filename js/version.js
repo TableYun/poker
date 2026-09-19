@@ -10,9 +10,18 @@ Version log writing guide:
 - Add optional contributor credits as dedicated metadata instead of release notes.
 */
 
-export const APP_VERSION = "1.9.11";
+export const APP_VERSION = "1.9.12";
 
 export const VERSION_LOG = [
+	{
+		version: "1.9.12",
+		date: "2026-09-19",
+		title: "동기화 롱폴링 전환",
+		notes: [
+			"원격 화면과 호스트가 서버 변화를 기다리는 방식(롱폴링)으로 바뀌어, 동기화 서버 요청 수가 약 90% 줄었습니다. 무료 사용량 한도 안에서 훨씬 오래 플레이할 수 있습니다.",
+		],
+		estimated: false,
+	},
 	{
 		version: "1.9.11",
 		date: "2026-09-19",

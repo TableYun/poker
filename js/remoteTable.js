@@ -223,10 +223,13 @@ async function pollState() {
 	}
 
 	isPolling = true;
+	const startedAt = Date.now();
 	try {
+		// wait=1 lets the server hold the request open until the state changes, keeping
+		// the request count against the sync server low.
 		const url = `${STATE_ENDPOINT}?tableId=${
 			encodeURIComponent(tableId)
-		}&seatIndex=${seatIndexParam}&sinceVersion=${lastVersion}`;
+		}&seatIndex=${seatIndexParam}&sinceVersion=${lastVersion}&wait=1`;
 		const res = await fetch(url, { cache: "no-store" });
 		if (res.status === 204) {
 			return;
@@ -247,16 +250,20 @@ async function pollState() {
 		setNotification("연결이 끊겼습니다.");
 	} finally {
 		isPolling = false;
-		schedulePoll();
+		schedulePoll(startedAt);
 	}
 }
 
-function schedulePoll() {
+function schedulePoll(lastPollStartedAt = 0) {
 	if (document.visibilityState !== "visible") {
 		pollTimeoutId = null;
 		return;
 	}
-	pollTimeoutId = setTimeout(pollState, REFRESH_INTERVAL);
+	// Long-held responses are followed up right away; quick responses keep the normal
+	// spacing so a non-long-polling server or an error never becomes a tight loop.
+	const elapsed = Date.now() - lastPollStartedAt;
+	const delay = Math.max(250, REFRESH_INTERVAL - elapsed);
+	pollTimeoutId = setTimeout(pollState, delay);
 }
 
 function handleVisibilityChange() {
