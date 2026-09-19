@@ -2275,10 +2275,33 @@ async function sendTableState() {
 		}
 		const body = await res.json().catch(() => null);
 		hostChatPanel?.applyChat(body?.chat);
+		applySeatRequests(body?.seatRequests);
 	} catch (error) {
 		logFlow("state sync failed", error);
 		queueStateSync();
 	}
+}
+
+// Remote players can ask for 자리비움/복귀 themselves; the sync server hands those
+// requests to the host here, and they follow the exact same path as the host's own
+// away toggle (reserved, applied between hands).
+function applySeatRequests(seatRequests) {
+	if (!Array.isArray(seatRequests)) {
+		return;
+	}
+	seatRequests.forEach((request) => {
+		const player = gameState.allPlayers?.find((rosterPlayer) =>
+			!rosterPlayer.isBot && rosterPlayer.seatIndex === request?.seatIndex
+		);
+		if (!player) {
+			return;
+		}
+		if (request.type === "away") {
+			setPlayerAway(player, true);
+		} else if (request.type === "return") {
+			setPlayerAway(player, false);
+		}
+	});
 }
 
 function queueStateSync(delay = STATE_SYNC_DELAY) {
@@ -4058,14 +4081,11 @@ function handleRebuyClick(ev) {
 	saveCurrentGameSnapshot();
 }
 
-function handleAwayToggleClick(ev) {
-	const seatEl = ev.currentTarget.closest(".seat");
-	const seatRef = seatRefs.find((currentSeatRef) => currentSeatRef.seatEl === seatEl);
-	const player = getRosterPlayerBySeatSlot(seatRef?.seatSlot);
-	if (!player || player.isBot) {
+function setPlayerAway(player, away) {
+	if (!player || player.isBot || player.away === (away === true)) {
 		return;
 	}
-	player.away = player.away !== true;
+	player.away = away === true;
 	if (player.away) {
 		enqueueNotification(`${player.name} 자리비움 – 다음 핸드부터 쉽니다.`);
 		// If it is their turn right now, fold for them so the table keeps moving.
@@ -4083,6 +4103,16 @@ function handleAwayToggleClick(ev) {
 	updateSeatManagementControls();
 	queueStateSync();
 	saveCurrentGameSnapshot();
+}
+
+function handleAwayToggleClick(ev) {
+	const seatEl = ev.currentTarget.closest(".seat");
+	const seatRef = seatRefs.find((currentSeatRef) => currentSeatRef.seatEl === seatEl);
+	const player = getRosterPlayerBySeatSlot(seatRef?.seatSlot);
+	if (!player || player.isBot) {
+		return;
+	}
+	setPlayerAway(player, player.away !== true);
 }
 
 /* --------------------------------------------------------------------------------------------------

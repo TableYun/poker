@@ -10,9 +10,19 @@ Version log writing guide:
 - Add optional contributor credits as dedicated metadata instead of release notes.
 */
 
-export const APP_VERSION = "1.9.33";
+export const APP_VERSION = "1.9.34";
 
 export const VERSION_LOG = [
+	{
+		version: "1.9.34",
+		date: "2026-09-20",
+		title: "플레이어 본인 자리비움",
+		notes: [
+			"원격으로 접속한 플레이어가 직접 자리비움 버튼을 눌러 다음 핸드부터 쉴 수 있습니다.",
+			"자리비움 중에도 테이블을 계속 관전할 수 있고, 복귀 버튼을 누르면 다음 핸드부터 다시 참가합니다.",
+		],
+		estimated: false,
+	},
 	{
 		version: "1.9.33",
 		date: "2026-09-20",

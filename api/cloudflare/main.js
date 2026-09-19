@@ -9,7 +9,9 @@ const primaryOrigin = "https://tableyun.github.io";
 const devOrigin = "http://127.0.0.1:5500";
 const STATE_TTL = 86_400_000;
 const ACTION_TTL = 120_000;
+const SEAT_REQUEST_TTL = 120_000;
 const allowedActionNames = new Set(["fold", "check", "call", "raise", "allin"]);
+const allowedSeatRequestTypes = new Set(["away", "return"]);
 const allowedOrigins = new Set([
 	primaryOrigin,
 	devOrigin,
@@ -132,10 +134,52 @@ export class PokerTable {
 		return jsonResponse({ ok: true, seq: chat.seq }, origin);
 	}
 
+	// Seat requests (away/return) flow remote player -> host: stored here, then handed to
+	// the host once in the next POST /state response. Same piggyback pattern as chat.
+	async handlePostSeatRequest(request, origin) {
+		let data;
+		try {
+			data = await request.json();
+		} catch {
+			return textResponse("Invalid JSON", 400, origin);
+		}
+		const seatIndex = parseInteger(data?.seatIndex);
+		const type = typeof data?.type === "string" ? data.type.trim() : "";
+		if (seatIndex === null) {
+			return textResponse("Missing seatIndex", 400, origin);
+		}
+		if (!allowedSeatRequestTypes.has(type)) {
+			return textResponse("Invalid type", 400, origin);
+		}
+		const requests = (await this.ctx.storage.get("seatRequests") ?? [])
+			.filter((entry) =>
+				Date.now() - entry.storedAtMs <= SEAT_REQUEST_TTL &&
+				entry.seatIndex !== seatIndex
+			);
+		requests.push({ seatIndex, type, storedAtMs: Date.now() });
+		await this.ctx.storage.put("seatRequests", requests.slice(-10));
+		return jsonResponse({ ok: true }, origin);
+	}
+
+	async takeSeatRequests() {
+		const requests = (await this.ctx.storage.get("seatRequests") ?? [])
+			.filter((entry) => Date.now() - entry.storedAtMs <= SEAT_REQUEST_TTL);
+		if (requests.length > 0 || (await this.ctx.storage.get("seatRequests")) !== undefined) {
+			await this.ctx.storage.delete("seatRequests");
+		}
+		return requests.map(({ storedAtMs: _storedAtMs, ...entry }) => entry);
+	}
+
 	async fetch(request) {
 		const url = new URL(request.url);
 		const origin = request.headers.get("origin");
 
+		if (url.pathname === "/request") {
+			if (request.method === "POST") {
+				return this.handlePostSeatRequest(request, origin);
+			}
+			return textResponse("Method not allowed", 405, origin);
+		}
 		if (url.pathname === "/chat") {
 			if (request.method === "POST") {
 				return this.handlePostChat(request, origin);
@@ -190,6 +234,7 @@ export class PokerTable {
 			updatedAt: record.updatedAt,
 			schemaVersion: record.schemaVersion,
 			chat: this.buildChatTail(chat, parseInteger(data?.sinceChat) ?? 0),
+			seatRequests: await this.takeSeatRequests(),
 		}, origin);
 	}
 
@@ -302,7 +347,7 @@ async function routeRequest(request, env) {
 	}
 	if (
 		url.pathname !== "/state" && url.pathname !== "/action" &&
-		url.pathname !== "/chat"
+		url.pathname !== "/chat" && url.pathname !== "/request"
 	) {
 		return textResponse("Not found", 404, request.headers.get("origin"));
 	}

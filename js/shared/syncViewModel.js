@@ -196,6 +196,8 @@ export function buildSeatView(player, communityCards, gameState) {
 		roundBet: player.roundBet,
 		folded: player.folded,
 		allIn: player.allIn,
+		away: player.away === true,
+		benched: false,
 		holeCards: player.holeCards.slice(),
 		handStrengthLabel: shouldShowSeatHandStrength(player, communityCards, gameState)
 			? getLabelSafely(() => getPlayerHandStrengthLabel(player, communityCards))
@@ -208,11 +210,35 @@ export function buildSeatView(player, communityCards, gameState) {
 	};
 }
 
+// A benched human (away, or busted and waiting for a rebuy) is not in the current hand,
+// but their remote view must keep working so they can watch and press 복귀 themselves.
+function buildBenchedSeatView(player) {
+	return {
+		seatIndex: player.seatIndex,
+		seatSlot: player.seatSlot,
+		name: player.name,
+		chips: player.chips,
+		roundBet: 0,
+		folded: true,
+		allIn: false,
+		away: player.away === true,
+		benched: true,
+		holeCards: [null, null],
+		handStrengthLabel: "",
+		outsLabel: "",
+		winProbability: null,
+		showWinProbability: false,
+	};
+}
+
 export function buildSyncView(gameState, notifications = [], now = Date.now()) {
 	const communityCards = Array.isArray(gameState?.communityCards)
 		? gameState.communityCards.slice()
 		: [];
 	const players = Array.isArray(gameState?.players) ? gameState.players : [];
+	const seatedSet = new Set(players);
+	const benchedHumans = (Array.isArray(gameState?.allPlayers) ? gameState.allPlayers : [])
+		.filter((player) => !player.isBot && !seatedSet.has(player));
 
 	return {
 		table: {
@@ -227,6 +253,9 @@ export function buildSyncView(gameState, notifications = [], now = Date.now()) {
 			chipTransfer: buildPublicChipTransferState(gameState),
 			pendingAction: gameState.pendingAction ? { ...gameState.pendingAction } : null,
 		},
-		seatViews: players.map((player) => buildSeatView(player, communityCards, gameState)),
+		seatViews: [
+			...players.map((player) => buildSeatView(player, communityCards, gameState)),
+			...benchedHumans.map((player) => buildBenchedSeatView(player)),
+		],
 	};
 }

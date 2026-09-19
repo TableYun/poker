@@ -63,6 +63,7 @@ const amountIncrementButton = document.getElementById("amount-increment-button")
 const sliderOutput = document.getElementById("slider-output");
 const remoteSwitchLink = document.getElementById("remote-switch-link");
 const preFoldButton = document.getElementById("prefold-button");
+const awayButton = document.getElementById("away-button");
 const soundButton = document.getElementById("sound-button");
 const seatRefs = Array.from(document.querySelectorAll(".seat")).map((seatEl, seatSlot) => ({
 	seatSlot,
@@ -88,6 +89,7 @@ const seatIndexParam = parseOptionalInt(urlParams.get("seatIndex"));
 const STATE_ENDPOINT = "https://poker-sync.tableyun.workers.dev/state";
 const ACTION_ENDPOINT = "https://poker-sync.tableyun.workers.dev/action";
 const CHAT_ENDPOINT = "https://poker-sync.tableyun.workers.dev/chat";
+const SEAT_REQUEST_ENDPOINT = "https://poker-sync.tableyun.workers.dev/request";
 const REFRESH_INTERVAL = 2000;
 const ACTION_STEP = 10;
 const DEFAULT_NOTIFICATION = "업데이트를 기다리는 중...";
@@ -99,6 +101,9 @@ let preFoldArmed = false;
 let preFoldHandKey = "";
 let pollTimeoutId = null;
 let isPolling = false;
+let ownAway = false;
+let awayRequestedState = null;
+let awayRequestedAt = 0;
 
 /* --------------------------------------------------------------------------------------------------
 Helpers
@@ -196,6 +201,63 @@ function updatePreFold(seatView, showTurnControls) {
 	preFoldButton.textContent = preFoldArmed ? "폴드 예약됨 - 취소하려면 누르세요" : "폴드 예약";
 }
 
+// Away/return, requested by the player themselves: the sync server hands the request to
+// the host, which reserves it like its own away toggle (applied between hands). The
+// button stays disabled until the next state confirms the change.
+function renderAwayButton() {
+	if (!awayButton) {
+		return;
+	}
+	awayButton.classList.remove("hidden");
+	if (awayRequestedState !== null) {
+		awayButton.disabled = true;
+		awayButton.textContent = awayRequestedState ? "자리비움 요청 중..." : "복귀 요청 중...";
+		return;
+	}
+	awayButton.disabled = false;
+	awayButton.textContent = ownAway ? "복귀하기 - 다음 핸드부터 참가" : "자리비움";
+}
+
+function updateAwayButton(seatView) {
+	ownAway = seatView?.away === true;
+	if (awayRequestedState !== null) {
+		// Confirmed by the host, or abandoned (host unreachable) - re-enable either way.
+		if (ownAway === awayRequestedState || Date.now() - awayRequestedAt > 15_000) {
+			awayRequestedState = null;
+		}
+	}
+	renderAwayButton();
+}
+
+async function sendAwayRequest() {
+	if (awayRequestedState !== null || seatIndexParam === null) {
+		return;
+	}
+	const target = ownAway !== true;
+	awayRequestedState = target;
+	awayRequestedAt = Date.now();
+	renderAwayButton();
+	try {
+		const res = await fetch(SEAT_REQUEST_ENDPOINT, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				tableId,
+				seatIndex: seatIndexParam,
+				type: target ? "away" : "return",
+			}),
+		});
+		if (!res.ok) {
+			throw new Error(`seat request failed with status ${res.status}`);
+		}
+	} catch (error) {
+		console.warn("seat request failed", error);
+		awayRequestedState = null;
+		renderAwayButton();
+		setNotification("자리비움 요청이 실패했습니다.");
+	}
+}
+
 // The sole chip leader's seat gets a crown; ties show none.
 function getUniqueChipLeaderSeatIndex(playersPublic) {
 	let maxChips = 0;
@@ -283,6 +345,7 @@ function applyRemoteState(payload) {
 	renderCommunityCards(communityCardSlots, tableView.communityCards);
 	actionControls.render(seatView, pendingAction);
 	updatePreFold(seatView, showTurnControls);
+	updateAwayButton(seatView);
 	setViewSwitchLinkVisible(remoteSwitchLink, !showTurnControls);
 	renderNotifications(tableView.notifications);
 }
@@ -368,6 +431,7 @@ function init() {
 	document.addEventListener("visibilitychange", handleVisibilityChange);
 	actionControls.init();
 	chatPanel.init();
+	awayButton?.addEventListener("click", sendAwayRequest, false);
 	preFoldButton?.addEventListener("click", () => {
 		preFoldArmed = !preFoldArmed;
 		preFoldButton.classList.toggle("armed", preFoldArmed);

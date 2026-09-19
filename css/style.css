@@ -1581,13 +1581,18 @@ main.own-focus .seat:not(.own-seat) .pill {
 }
 
 /* Pre-fold toggle on the synced seat views: neutral while waiting, red when armed. */
-#prefold-button {
+#prefold-button,
+#away-button {
     width: auto;
     white-space: nowrap;
     background-color: var(--blue);
     color: var(--font-color);
     border: 1px solid var(--font-color);
     font-size: 0.9rem;
+}
+
+#away-button:disabled {
+    opacity: 0.6;
 }
 
 #prefold-button.armed {
