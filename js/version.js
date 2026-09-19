@@ -10,9 +10,18 @@ Version log writing guide:
 - Add optional contributor credits as dedicated metadata instead of release notes.
 */
 
-export const APP_VERSION = "1.9.7";
+export const APP_VERSION = "1.9.8";
 
 export const VERSION_LOG = [
+	{
+		version: "1.9.8",
+		date: "2026-09-19",
+		title: "참가 링크는 항상 전체 테이블로",
+		notes: [
+			"참가 QR·링크가 예전 주소여도 이제 자동으로 전체 테이블 화면으로 이동합니다. 카드 화면은 전체 테이블의 전환 버튼으로만 열립니다.",
+		],
+		estimated: false,
+	},
 	{
 		version: "1.9.7",
 		date: "2026-09-19",

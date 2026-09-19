@@ -281,7 +281,10 @@ function init() {
 	initSoundButton(soundButton);
 	document.addEventListener("visibilitychange", handleVisibilityChange);
 	actionControls.init();
-	configureViewSwitchLink(remoteSwitchLink, "hole-cards.html", tableId, seatIndexParam);
+	// view=cards marks a deliberate switch to the card view, so it doesn't bounce back here.
+	configureViewSwitchLink(remoteSwitchLink, "hole-cards.html", tableId, seatIndexParam, {
+		view: "cards",
+	});
 	clearChipTransferAnimation(tableRenderTarget);
 	seatRefs.forEach(clearRenderedSeat);
 	setViewSwitchLinkVisible(remoteSwitchLink, false);

@@ -105,6 +105,14 @@ Functions
 ---------------------------------------------------------------------------------------------------*/
 
 function init() {
+	// A synced join link lands on the full remote-table view first. Only links that ask
+	// for the card view explicitly (the remote table's switch button, view=cards) stay here.
+	if (tableId && seatIndexParam !== null && urlParams.get("view") !== "cards") {
+		globalThis.location.replace(
+			`remoteTable.html?tableId=${encodeURIComponent(tableId)}&seatIndex=${seatIndexParam}`,
+		);
+		return;
+	}
 	initSound();
 	initSoundButton(soundButton);
 	document.addEventListener("touchstart", function () {}, false);

@@ -37,11 +37,17 @@ export function getSeatPendingAction(tableView, seatIndex) {
 	return null;
 }
 
-export function configureViewSwitchLink(linkEl, targetPath, tableId, seatIndex) {
+export function configureViewSwitchLink(linkEl, targetPath, tableId, seatIndex, extraParams = null) {
 	if (!linkEl || !tableId || seatIndex === null) {
 		return;
 	}
-	linkEl.href = `${targetPath}?tableId=${encodeURIComponent(tableId)}&seatIndex=${seatIndex}`;
+	let href = `${targetPath}?tableId=${encodeURIComponent(tableId)}&seatIndex=${seatIndex}`;
+	if (extraParams) {
+		for (const [key, value] of Object.entries(extraParams)) {
+			href += `&${encodeURIComponent(key)}=${encodeURIComponent(value)}`;
+		}
+	}
+	linkEl.href = href;
 }
 
 export function setViewSwitchLinkVisible(linkEl, isVisible) {
