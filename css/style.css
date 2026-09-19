@@ -933,6 +933,25 @@ footer {
     white-space: nowrap;
 }
 
+.blind-up-control {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 0 2vmin;
+    padding: 1.5vmin 2vmin;
+    border-radius: 1vmin;
+    border: 1px solid hsla(0, 0%, 100%, 0.15);
+    color: var(--font-color);
+    cursor: pointer;
+}
+
+.blind-up-control input[type="checkbox"] {
+    width: 1.1rem;
+    height: 1.1rem;
+    accent-color: var(--yellow);
+    cursor: pointer;
+}
+
 .round-delay-control input[type="number"] {
     width: 3em;
     padding: 0.1rem 0.3rem;
@@ -1042,6 +1061,50 @@ PLAYER
 .seat.winner {
     border-color: var(--yellow-active);
     box-shadow: 0 0 24px hsla(40, 100%, 55%, 0.55), var(--shadow);
+}
+
+.seat.raised {
+    animation: seat-raise-pop 550ms ease-out;
+}
+
+@keyframes seat-raise-pop {
+    0% {
+        box-shadow: 0 0 0 0 hsla(40, 100%, 60%, 0.7), var(--shadow);
+        transform: scale(1);
+    }
+
+    35% {
+        box-shadow: 0 0 0 10px hsla(40, 100%, 60%, 0), var(--shadow);
+        transform: scale(1.04);
+    }
+
+    100% {
+        box-shadow: var(--shadow);
+        transform: scale(1);
+    }
+}
+
+.seat.allin {
+    border-color: var(--invalid);
+    box-shadow: 0 0 20px hsla(0, 100%, 55%, 0.6), var(--shadow);
+    animation: seat-allin-pop 700ms ease-out;
+}
+
+@keyframes seat-allin-pop {
+    0% {
+        box-shadow: 0 0 0 0 hsla(0, 100%, 55%, 0.8);
+        transform: scale(1);
+    }
+
+    40% {
+        box-shadow: 0 0 0 14px hsla(0, 100%, 55%, 0);
+        transform: scale(1.05);
+    }
+
+    100% {
+        box-shadow: 0 0 20px hsla(0, 100%, 55%, 0.6), var(--shadow);
+        transform: scale(1);
+    }
 }
 
 .hole-cards {

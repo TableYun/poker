@@ -86,7 +86,7 @@ The same table supports different ways to play. The mode depends only on how man
 ## 🚀 Getting Started
 
 1. Open this URL on a shared device (e.g., tablet or laptop): 👉
-   [https://tehes.github.io/poker](https://tehes.github.io/poker)
+   [https://tableyun.github.io/poker](https://tableyun.github.io/poker)
 
 2. Add players by typing their names.
 

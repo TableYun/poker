@@ -55,6 +55,7 @@ import {
 	recordPlayerActionStats,
 	resolveShowdown,
 	resolveTurnAction,
+	shuffleArray,
 } from "./gameEngine.js";
 import QrCreator from "./qr-creator.js";
 import {
@@ -98,6 +99,8 @@ const newRoundCountdownValue = document.querySelector(
 );
 const newRoundCancelButton = document.querySelector("#new-round-cancel-button");
 const instructionsButton = document.querySelector("#instructions-button");
+const blindUpControl = document.querySelector("#blind-up-control");
+const blindUpCheckbox = document.querySelector("#blind-up-checkbox");
 const rotateIcons = document.querySelectorAll(".seat .rotate");
 const closeButtons = document.querySelectorAll(".close");
 const rebuyButtons = document.querySelectorAll(".rebuy");
@@ -225,6 +228,8 @@ const MIN_NEW_ROUND_COUNTDOWN_SECONDS = 3;
 const MAX_NEW_ROUND_COUNTDOWN_SECONDS = 60;
 const NEW_ROUND_COUNTDOWN_STORAGE_KEY = "poker:new-round-countdown-seconds";
 let NEW_ROUND_COUNTDOWN_SECONDS = DEFAULT_NEW_ROUND_COUNTDOWN_SECONDS;
+const BLIND_UP_STORAGE_KEY = "poker:blind-up-enabled";
+let blindUpEnabled = true;
 const NEW_ROUND_COUNTDOWN_INTERVAL = 1000;
 const SAVED_GAME_SCHEMA_VERSION = 1;
 const SAVED_GAME_STORAGE_KEY = "poker:saved-game:v1";
@@ -246,8 +251,8 @@ if (SPEED_MODE) {
 	DEBUG_FLOW = true;
 }
 
-const STATE_SYNC_ENDPOINT = "https://poker.tehes.deno.net/state";
-const ACTION_SYNC_ENDPOINT = "https://poker.tehes.deno.net/action";
+const STATE_SYNC_ENDPOINT = "https://tableyun-poker.deno.dev/state";
+const ACTION_SYNC_ENDPOINT = "https://tableyun-poker.deno.dev/action";
 let tableId = null;
 const STATE_SYNC_DELAY = 750;
 const ACTION_POLL_INTERVAL = 1000;
@@ -316,6 +321,34 @@ const HAND_NAME_KO = {
 function translateHandName(name) {
 	return HAND_NAME_KO[name] ?? name;
 }
+
+// Common American first names, transliterated to Korean, used for auto-filled bot seats.
+const BOT_NAME_POOL = [
+	"존",
+	"마이크",
+	"제임스",
+	"에밀리",
+	"사라",
+	"케빈",
+	"제니퍼",
+	"데이비드",
+	"애슐리",
+	"크리스",
+	"제시카",
+	"브라이언",
+	"엠마",
+	"라이언",
+	"올리비아",
+	"매튜",
+	"소피아",
+	"조쉬",
+	"한나",
+	"타일러",
+	"메건",
+	"앤드류",
+	"니콜",
+	"브랜든",
+];
 
 const gameState = {
 	currentPhaseIndex: 0,
@@ -411,6 +444,44 @@ function saveNewRoundCountdownSeconds(seconds) {
 	} catch (error) {
 		console.warn("round delay storage write failed", error);
 	}
+}
+
+function loadBlindUpEnabled() {
+	const storage = getLocalStorage();
+	if (!storage) {
+		return true;
+	}
+	try {
+		const stored = storage.getItem(BLIND_UP_STORAGE_KEY);
+		return stored === null ? true : stored === "true";
+	} catch (error) {
+		console.warn("blind-up storage read failed", error);
+		return true;
+	}
+}
+
+function saveBlindUpEnabled(enabled) {
+	const storage = getLocalStorage();
+	if (!storage) {
+		return;
+	}
+	try {
+		storage.setItem(BLIND_UP_STORAGE_KEY, enabled ? "true" : "false");
+	} catch (error) {
+		console.warn("blind-up storage write failed", error);
+	}
+}
+
+function initBlindUpControl() {
+	blindUpEnabled = loadBlindUpEnabled();
+	if (!blindUpCheckbox) {
+		return;
+	}
+	blindUpCheckbox.checked = blindUpEnabled;
+	blindUpCheckbox.addEventListener("change", () => {
+		blindUpEnabled = blindUpCheckbox.checked;
+		saveBlindUpEnabled(blindUpEnabled);
+	}, false);
 }
 
 function initRoundDelayInput() {
@@ -2416,6 +2487,7 @@ function startGame() {
 			);
 			startButton.classList.add("hidden");
 			instructionsButton.classList.add("hidden");
+			blindUpControl?.classList.add("hidden");
 			closeAllOverlays();
 			gameState.gameStarted = true;
 			initStateSyncForGame();
@@ -2442,7 +2514,8 @@ function startGame() {
 function createPlayers() {
 	gameState.players = [];
 	gameState.allPlayers = [];
-	let botIndex = 1;
+	const botNames = shuffleArray(BOT_NAME_POOL.slice());
+	let botIndex = 0;
 	for (const seatRef of seatRefs) {
 		seatRef.playerSeatIndex = null;
 		seatRef.clearActionLabelState = null;
@@ -2451,7 +2524,8 @@ function createPlayers() {
 			continue;
 		}
 		if (seatRef.nameEl.textContent.trim() === "") {
-			seatRef.nameEl.textContent = `봇 ${botIndex++}`;
+			seatRef.nameEl.textContent = botNames[botIndex] ?? `봇 ${botIndex + 1}`;
+			botIndex++;
 			renderSeatSetupState(seatRef, { isBot: true });
 		} else {
 			renderSeatSetupState(seatRef, { isBot: false });
@@ -2539,6 +2613,9 @@ function setDealer() {
 }
 
 function updateBlindLevelForCurrentHand() {
+	if (!blindUpEnabled) {
+		return;
+	}
 	const blindLevelUpdate = getBlindLevelUpdateForHand(totalHands, gameState);
 	if (!blindLevelUpdate) {
 		return;
@@ -3494,6 +3571,7 @@ function init() {
 	initSound();
 	initSoundButton(soundButton);
 	initRoundDelayInput();
+	initBlindUpControl();
 
 	// Prevent framing
 	if (globalThis.top !== globalThis.self) {
@@ -3501,10 +3579,10 @@ function init() {
 			globalThis.top.location.href = globalThis.location.href;
 		} catch {
 			alert(
-				"No framing allowed. Please visit: https://tehes.github.io/poker/",
+				"No framing allowed. Please visit: https://tableyun.github.io/poker/",
 			);
 			throw new Error(
-				"No framing allowed. Open the original: https://tehes.github.io/poker/",
+				"No framing allowed. Open the original: https://tableyun.github.io/poker/",
 			);
 		}
 	}
@@ -3625,7 +3703,7 @@ poker.init();
  * - AUTO_RELOAD_ON_SW_UPDATE: reload page once after an update
  -------------------------------------------------------------------------------------------------- */
 const USE_SERVICE_WORKER = true;
-const SERVICE_WORKER_VERSION = "2026-09-19-v6";
+const SERVICE_WORKER_VERSION = "2026-09-19-v8";
 const AUTO_RELOAD_ON_SW_UPDATE = true;
 
 initServiceWorker({

@@ -12,16 +12,15 @@
 	<!-- SEO -->
 	<meta property="og:description"
 		content="Play Texas Hold'em solo against bots or with friends. Join via QR code or link to see your cards privately on your own phone while the shared table runs the game.">
-	<link rel="canonical" href="https://tehes.github.io/poker/">
-	<meta name="author" content="Tino Sabetta">
+	<link rel="canonical" href="https://tableyun.github.io/poker/">
 
 	<!-- Open Graph -->
 	<meta property="og:type" content="website">
 	<meta property="og:title" content="Digital Poker Table">
 	<meta property="og:description"
 		content="Play Texas Hold'em solo against bots or with friends. Players can join private views via QR code or link while the shared table runs the game.">
-	<meta property="og:url" content="https://tehes.github.io/poker/">
-	<meta property="og:image" content="https://tehes.github.io/poker/img/og.png">
+	<meta property="og:url" content="https://tableyun.github.io/poker/">
+	<meta property="og:image" content="https://tableyun.github.io/poker/img/og.png">
 
 	<title>포커</title>
 
@@ -33,10 +32,6 @@
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Secular+One&display=swap" rel="stylesheet">
-
-	<script defer src="https://cloud.umami.is/script.js" data-website-id="2392a451-203c-4d8a-a4f5-bd7d06f832af"
-		data-domains="tehes.github.io">
-		</script>
 </head>
 
 <body>
@@ -383,6 +378,10 @@
 								id="new-round-countdown-value">5</span>초 후</span></button>
 					<button type="button" id="new-round-cancel-button" class="hidden" name="button">X</button>
 				</div>
+				<label id="blind-up-control" class="blind-up-control">
+					<input type="checkbox" id="blind-up-checkbox" checked>
+					블라인드 업
+				</label>
 				<button type="button" id="instructions-button" name="button">설명</button>
 				<button type="button" id="stats-button" class="hidden" name="button">통계</button>
 				<button type="button" id="log-button" class="hidden" name="button">로그</button>
@@ -402,7 +401,7 @@
 	</main>
 	<footer>
 		<div id="credit">
-			<a href="https://github.com/Tehes">제작: Tehes</a>
+			<a href="https://github.com/Tehes/poker">Tehes의 Poker 기반 · 비공식 수정판</a>
 			<button type="button" id="version-button" class="version-button">버전</button>
 			<button type="button" id="sound-button" class="sound-toggle">소리 켜짐</button>
 			<label class="round-delay-control">새 라운드 대기
@@ -411,8 +410,6 @@
 		</div>
 		<div id="social">
 			<a href="https://github.com/Tehes/poker"><img alt="Github-Logo" src="social/github.svg" width="25"
-					height="25"></a>
-			<a href="https://www.threads.net/@tehes83"><img alt="Threads-Logo" src="social/threads.svg" width="25"
 					height="25"></a>
 		</div>
 	</footer>
@@ -499,6 +496,8 @@
 				<li>필요 없는 좌석은 닫기 아이콘으로 제거하세요.</li>
 				<li>회전 아이콘으로 좌석을 그 자리에 앉은 사람 쪽으로 돌릴 수 있습니다. 태블릿에서 특히 유용합니다.</li>
 				<li>게임을 시작하려면 최소 2개의 활성 좌석이 필요합니다.</li>
+				<li>“블라인드 업” 체크를 해제하면 블라인드가 오르지 않고 처음 금액으로 계속 진행됩니다. 시작 전에만
+					바꿀 수 있습니다.</li>
 			</ul>
 
 			<h3>핸드 진행 중</h3>

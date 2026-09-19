@@ -10,9 +10,29 @@ Version log writing guide:
 - Add optional contributor credits as dedicated metadata instead of release notes.
 */
 
-export const APP_VERSION = "1.7.0";
+export const APP_VERSION = "1.9.0";
 
 export const VERSION_LOG = [
+	{
+		version: "1.9.0",
+		date: "2026-09-19",
+		title: "봇 이름 개선",
+		notes: [
+			"빈 좌석을 채우는 봇 이름이 “봇 1”, “봇 2” 대신 흔한 이름으로 바뀝니다.",
+		],
+		estimated: false,
+	},
+	{
+		version: "1.8.0",
+		date: "2026-09-19",
+		title: "블라인드 업 설정과 레이즈/올인 이펙트",
+		notes: [
+			"시작 전에 “블라인드 업” 체크를 해제하면 블라인드가 오르지 않고 처음 금액으로 계속 진행됩니다.",
+			"새 라운드 대기 시간의 기본값을 20초에서 5초로 줄이고, 푸터에서 3~60초 사이로 직접 설정할 수 있습니다.",
+			"레이즈하면 좌석에 노란색 펄스가, 올인하면 빨간색 글로우가 떠서 한눈에 알아볼 수 있습니다.",
+		],
+		estimated: false,
+	},
 	{
 		version: "1.7.0",
 		date: "2026-09-19",
