@@ -380,7 +380,7 @@
 				<div id="new-round-controls" class="new-round-controls">
 					<button type="button" id="start-button" name="button"><span
 							id="start-button-label">시작</span><span id="new-round-countdown" class="hidden"> · <span
-								id="new-round-countdown-value">20</span>초 후</span></button>
+								id="new-round-countdown-value">5</span>초 후</span></button>
 					<button type="button" id="new-round-cancel-button" class="hidden" name="button">X</button>
 				</div>
 				<button type="button" id="instructions-button" name="button">설명</button>
@@ -405,6 +405,9 @@
 			<a href="https://github.com/Tehes">제작: Tehes</a>
 			<button type="button" id="version-button" class="version-button">버전</button>
 			<button type="button" id="sound-button" class="sound-toggle">소리 켜짐</button>
+			<label class="round-delay-control">새 라운드 대기
+				<input type="number" id="round-delay-input" min="3" max="60" step="1" value="5">초
+			</label>
 		</div>
 		<div id="social">
 			<a href="https://github.com/Tehes/poker"><img alt="Github-Logo" src="social/github.svg" width="25"

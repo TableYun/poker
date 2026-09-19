@@ -901,10 +901,13 @@ function isStraightOrBetter(solvedHand) {
 	return HAND_RANK_ORDER.indexOf(solvedHand.name) >= STRAIGHT_RANK_INDEX;
 }
 
-// Outs are remaining deck cards that would complete at least a Straight if they land on a later
-// street. Only meaningful with the flop or turn on board; preflop has no board to draw against and
-// the river has no more cards to come.
-export function getOutsToStraightOrBetter(player, communityCards, deck) {
+// Outs are cards that would complete at least a Straight if they land on a later street. The pool
+// is "52 minus what this player can see" (their hole cards plus the board), matching standard outs
+// math (e.g. outs/47 on the flop) rather than the true remaining shoe, which would also exclude
+// opponents' hidden hole cards the player has no way to know about.
+// Only meaningful with the flop or turn on board; preflop has no board to draw against and the
+// river has no more cards to come.
+export function getOutsToStraightOrBetter(player, communityCards) {
 	if (!player.holeCards.every(Boolean)) {
 		return null;
 	}
@@ -917,11 +920,13 @@ export function getOutsToStraightOrBetter(player, communityCards, deck) {
 		return null;
 	}
 
-	const outCards = deck.filter((cardCode) =>
+	const known = new Set([...player.holeCards, ...communityCards]);
+	const unseenCards = INITIAL_DECK.filter((cardCode) => !known.has(cardCode));
+	const outCards = unseenCards.filter((cardCode) =>
 		isStraightOrBetter(Hand.solve([...player.holeCards, ...communityCards, cardCode]))
 	);
 
-	const unseen = deck.length;
+	const unseen = unseenCards.length;
 	const outs = outCards.length;
 	if (outs === 0 || unseen === 0) {
 		return { outs, outCards, percentage: 0 };
@@ -937,8 +942,8 @@ export function getOutsToStraightOrBetter(player, communityCards, deck) {
 	return { outs, outCards, percentage };
 }
 
-export function getPlayerOutsLabel(player, communityCards, deck) {
-	const outsInfo = getOutsToStraightOrBetter(player, communityCards, deck);
+export function getPlayerOutsLabel(player, communityCards) {
+	const outsInfo = getOutsToStraightOrBetter(player, communityCards);
 	if (!outsInfo || outsInfo.outs === 0) {
 		return "";
 	}

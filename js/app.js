@@ -132,6 +132,7 @@ const logOverlay = document.querySelector("#log-overlay");
 const logCloseButton = document.querySelector("#log-close-button");
 const versionButton = document.querySelector("#version-button");
 const soundButton = document.querySelector("#sound-button");
+const roundDelayInput = document.querySelector("#round-delay-input");
 const versionOverlay = document.querySelector("#version-overlay");
 const versionCloseButton = document.querySelector("#version-close-button");
 const versionList = document.querySelector("#version-list");
@@ -219,7 +220,11 @@ const FAST_FORWARD_CHIP_TRANSFER_DURATION = 160;
 const FAST_FORWARD_CHIP_TRANSFER_STEPS = 8;
 const DEFAULT_CHIP_TRANSFER_STEPS = 30;
 const WINNER_REACTION_DURATION = 2000;
-const NEW_ROUND_COUNTDOWN_SECONDS = 20;
+const DEFAULT_NEW_ROUND_COUNTDOWN_SECONDS = 5;
+const MIN_NEW_ROUND_COUNTDOWN_SECONDS = 3;
+const MAX_NEW_ROUND_COUNTDOWN_SECONDS = 60;
+const NEW_ROUND_COUNTDOWN_STORAGE_KEY = "poker:new-round-countdown-seconds";
+let NEW_ROUND_COUNTDOWN_SECONDS = DEFAULT_NEW_ROUND_COUNTDOWN_SECONDS;
 const NEW_ROUND_COUNTDOWN_INTERVAL = 1000;
 const SAVED_GAME_SCHEMA_VERSION = 1;
 const SAVED_GAME_STORAGE_KEY = "poker:saved-game:v1";
@@ -368,6 +373,64 @@ function getLocalStorage() {
 		console.warn("saved game storage unavailable", error);
 		return null;
 	}
+}
+
+function clampNewRoundCountdownSeconds(seconds) {
+	return Math.min(
+		MAX_NEW_ROUND_COUNTDOWN_SECONDS,
+		Math.max(MIN_NEW_ROUND_COUNTDOWN_SECONDS, seconds),
+	);
+}
+
+function loadNewRoundCountdownSeconds() {
+	const storage = getLocalStorage();
+	if (!storage) {
+		return DEFAULT_NEW_ROUND_COUNTDOWN_SECONDS;
+	}
+	try {
+		const stored = Number.parseInt(
+			storage.getItem(NEW_ROUND_COUNTDOWN_STORAGE_KEY),
+			10,
+		);
+		if (Number.isFinite(stored)) {
+			return clampNewRoundCountdownSeconds(stored);
+		}
+	} catch (error) {
+		console.warn("round delay storage read failed", error);
+	}
+	return DEFAULT_NEW_ROUND_COUNTDOWN_SECONDS;
+}
+
+function saveNewRoundCountdownSeconds(seconds) {
+	const storage = getLocalStorage();
+	if (!storage) {
+		return;
+	}
+	try {
+		storage.setItem(NEW_ROUND_COUNTDOWN_STORAGE_KEY, String(seconds));
+	} catch (error) {
+		console.warn("round delay storage write failed", error);
+	}
+}
+
+function initRoundDelayInput() {
+	NEW_ROUND_COUNTDOWN_SECONDS = loadNewRoundCountdownSeconds();
+	if (newRoundCountdownValue) {
+		newRoundCountdownValue.textContent = String(NEW_ROUND_COUNTDOWN_SECONDS);
+	}
+	if (!roundDelayInput) {
+		return;
+	}
+	roundDelayInput.value = String(NEW_ROUND_COUNTDOWN_SECONDS);
+	roundDelayInput.addEventListener("change", () => {
+		const parsed = Number.parseInt(roundDelayInput.value, 10);
+		const next = clampNewRoundCountdownSeconds(
+			Number.isFinite(parsed) ? parsed : DEFAULT_NEW_ROUND_COUNTDOWN_SECONDS,
+		);
+		NEW_ROUND_COUNTDOWN_SECONDS = next;
+		roundDelayInput.value = String(next);
+		saveNewRoundCountdownSeconds(next);
+	}, false);
 }
 
 function clonePlainValue(value, fallback = null) {
@@ -3430,6 +3493,7 @@ App Bootstrap And Public API
 function init() {
 	initSound();
 	initSoundButton(soundButton);
+	initRoundDelayInput();
 
 	// Prevent framing
 	if (globalThis.top !== globalThis.self) {
@@ -3561,7 +3625,7 @@ poker.init();
  * - AUTO_RELOAD_ON_SW_UPDATE: reload page once after an update
  -------------------------------------------------------------------------------------------------- */
 const USE_SERVICE_WORKER = true;
-const SERVICE_WORKER_VERSION = "2026-09-19-v4";
+const SERVICE_WORKER_VERSION = "2026-09-19-v6";
 const AUTO_RELOAD_ON_SW_UPDATE = true;
 
 initServiceWorker({

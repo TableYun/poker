@@ -166,7 +166,7 @@ export function buildPublicPlayerView(player, communityCards, gameState, now = D
 			? getPlayerHandStrengthLabel(player, communityCards)
 			: "",
 		outsLabel: shouldShowTableHandStrength(player, communityCards, gameState)
-			? getPlayerOutsLabel(player, communityCards, gameState.deck)
+			? getPlayerOutsLabel(player, communityCards)
 			: "",
 		winProbability: player.winProbability,
 		showWinProbability: shouldShowTableWinProbability(player, gameState),
@@ -190,7 +190,7 @@ export function buildSeatView(player, communityCards, gameState) {
 			? getPlayerHandStrengthLabel(player, communityCards)
 			: "",
 		outsLabel: shouldShowSeatHandStrength(player, communityCards, gameState)
-			? getPlayerOutsLabel(player, communityCards, gameState.deck)
+			? getPlayerOutsLabel(player, communityCards)
 			: "",
 		winProbability: player.winProbability,
 		showWinProbability: shouldShowSeatWinProbability(player, gameState),

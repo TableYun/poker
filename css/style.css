@@ -920,6 +920,31 @@ footer {
     box-shadow: none;
 }
 
+.round-delay-control {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.7rem;
+    border-radius: 999px;
+    border: 1px solid var(--blue-lightest);
+    color: var(--blue-lightest);
+    font-size: 0.8rem;
+    line-height: 0.9;
+    white-space: nowrap;
+}
+
+.round-delay-control input[type="number"] {
+    width: 3em;
+    padding: 0.1rem 0.3rem;
+    border-radius: 999px;
+    border: 1px solid var(--blue-lightest);
+    background-color: var(--blue);
+    color: var(--font-color);
+    font-family: inherit;
+    font-size: inherit;
+    text-align: center;
+}
+
 #social {
     display: flex;
     gap: 10px;
