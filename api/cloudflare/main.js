@@ -273,6 +273,14 @@ export class PokerTable {
 
 async function routeRequest(request, env) {
 	const url = new URL(request.url);
+	if (url.pathname === "/" || url.pathname === "") {
+		// Friendly status page for anyone opening the API host directly in a browser.
+		return textResponse(
+			"poker-sync OK - 포커 게임 동기화 서버입니다. 게임은 https://tableyun.github.io/poker 에서 플레이하세요.",
+			200,
+			request.headers.get("origin"),
+		);
+	}
 	if (url.pathname !== "/state" && url.pathname !== "/action") {
 		return textResponse("Not found", 404, request.headers.get("origin"));
 	}
