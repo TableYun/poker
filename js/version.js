@@ -10,9 +10,18 @@ Version log writing guide:
 - Add optional contributor credits as dedicated metadata instead of release notes.
 */
 
-export const APP_VERSION = "1.9.19";
+export const APP_VERSION = "1.9.20";
 
 export const VERSION_LOG = [
+	{
+		version: "1.9.20",
+		date: "2026-09-19",
+		title: "동기화 구조 안정판",
+		notes: [
+			"서버가 요청을 오래 붙잡는 방식(롱폴링)이 저장소 오류를 일으켜 테이블이 통째로 얼던 문제를 해결했습니다. 검증된 짧은 주기 방식으로 되돌리고, 호스트는 5초마다 상태를 강제로 재전송해 원격 화면이 어떤 경우에도 오래 멈추지 않습니다.",
+		],
+		estimated: false,
+	},
 	{
 		version: "1.9.19",
 		date: "2026-09-19",

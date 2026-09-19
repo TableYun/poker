@@ -2155,7 +2155,28 @@ async function fetchPendingRemoteAction(turnToken) {
 	}
 }
 
+let lastStateSendAttemptAt = 0;
+
+// Sync heartbeat: whatever happens to the normal debounced sync chain (a dropped timer,
+// an exception in a callback, a run of failed requests), a running synced game re-sends
+// its full state every few seconds, so remote views can never be starved for long.
+setInterval(() => {
+	if (!hasStateSyncEnabled() || !gameState.gameStarted) {
+		return;
+	}
+	if (Date.now() - lastStateSendAttemptAt < 5000) {
+		return;
+	}
+	if (stateSyncTimer !== null) {
+		clearTimeout(stateSyncTimer);
+		stateSyncTimer = null;
+		stateSyncTimerDelay = null;
+	}
+	sendTableState();
+}, 5000);
+
 async function sendTableState() {
+	lastStateSendAttemptAt = Date.now();
 	// Building the payload happens inside its own guard: an exception here (e.g. a hand
 	// evaluation blowing up on one player's cards) used to escape the retry chain and
 	// silently kill state sync for the rest of the game - remote views froze while the

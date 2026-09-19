@@ -1,15 +1,14 @@
 // Cloudflare Workers entry point for the poker sync backend.
-// Same HTTP contract as api/main.js (Deno): GET/POST /state, GET/POST /action, with
-// optional ?wait=1 long polling. Each table lives in its own Durable Object, so state
-// is strongly consistent and long-poll waiters are woken by real pushes instead of
-// storage polling.
+// Same HTTP contract as api/main.js (Deno): GET/POST /state, GET/POST /action. Each
+// table lives in its own Durable Object, so state is strongly consistent. Requests are
+// answered immediately; clients poll every couple of seconds (see handleGetState for
+// why server-side long polling was removed).
 
 const SYNC_VIEW_SCHEMA_VERSION = 7;
 const primaryOrigin = "https://tableyun.github.io";
 const devOrigin = "http://127.0.0.1:5500";
 const STATE_TTL = 86_400_000;
 const ACTION_TTL = 120_000;
-const LONG_POLL_MAX_WAIT = 20_000;
 const allowedActionNames = new Set(["fold", "check", "call", "raise", "allin"]);
 const allowedOrigins = new Set([
 	primaryOrigin,
@@ -84,34 +83,9 @@ function createSeatSyncPayload(record, seatIndex) {
 	};
 }
 
-// A promise that resolves when notifyAll() fires or after timeoutMs, whichever is first.
-function createWaiter(waiters, timeoutMs) {
-	return new Promise((resolve) => {
-		const entry = { resolve: null };
-		const timer = setTimeout(() => {
-			const index = waiters.indexOf(entry);
-			if (index !== -1) {
-				waiters.splice(index, 1);
-			}
-			resolve();
-		}, timeoutMs);
-		entry.resolve = () => {
-			clearTimeout(timer);
-			resolve();
-		};
-		waiters.push(entry);
-	});
-}
-
-function notifyAll(waiters) {
-	waiters.splice(0).forEach((entry) => entry.resolve());
-}
-
 export class PokerTable {
 	constructor(ctx) {
 		this.ctx = ctx;
-		this.stateWaiters = [];
-		this.actionWaiters = [];
 	}
 
 	async getRecord(key, ttl) {
@@ -168,7 +142,6 @@ export class PokerTable {
 			schemaVersion: SYNC_VIEW_SCHEMA_VERSION,
 		};
 		await this.ctx.storage.put("state", record);
-		notifyAll(this.stateWaiters);
 		return jsonResponse({
 			ok: true,
 			version: record.version,
@@ -181,31 +154,17 @@ export class PokerTable {
 		const seatIndex = parseInteger(url.searchParams.get("seatIndex"));
 		const sinceParam = url.searchParams.get("sinceVersion");
 		const sinceVersion = sinceParam ? Number.parseInt(sinceParam, 10) : 0;
-		const longPoll = url.searchParams.get("wait") === "1";
 
 		if (seatIndex === null) {
 			return textResponse("Missing seatIndex", 400, origin);
 		}
 
+		// Long polling (?wait=1) is deliberately NOT honored anymore: holding requests open
+		// inside the Durable Object left instances in a broken "reset" state under real
+		// traffic, which froze every table until eviction. Plain short polling is rock
+		// solid and well within Cloudflare's free request budget, so the parameter is
+		// accepted for compatibility and simply answered immediately.
 		let record = await this.getRecord("state", STATE_TTL);
-		if (longPoll && !Number.isNaN(sinceVersion)) {
-			// Register the waiter BEFORE re-checking, then wait in short chunks: a state
-			// posted between "check" and "wait" would otherwise miss the wake-up and stall
-			// the client for the whole wait budget - turns arrived late because of that.
-			const deadline = Date.now() + LONG_POLL_MAX_WAIT;
-			while ((!record || record.version <= sinceVersion) && Date.now() < deadline) {
-				const wakeUp = createWaiter(
-					this.stateWaiters,
-					Math.min(1_500, deadline - Date.now()),
-				);
-				record = await this.getRecord("state", STATE_TTL);
-				if (record && record.version > sinceVersion) {
-					break; // the registered waiter times out harmlessly
-				}
-				await wakeUp;
-				record = await this.getRecord("state", STATE_TTL);
-			}
-		}
 		if (!record) {
 			return textResponse("Not found", 404, origin);
 		}
@@ -254,36 +213,18 @@ export class PokerTable {
 			createdAt: new Date().toISOString(),
 			storedAtMs: Date.now(),
 		});
-		notifyAll(this.actionWaiters);
 		return jsonResponse({ ok: true }, origin);
 	}
 
 	async handleGetAction(url, origin) {
 		const turnToken = url.searchParams.get("turnToken")?.trim() || "";
-		const longPoll = url.searchParams.get("wait") === "1";
 		if (!turnToken) {
 			return textResponse("Missing turnToken", 400, origin);
 		}
 
-		let record = await this.getRecord("action", ACTION_TTL);
-		if (longPoll) {
-			// Same register-then-recheck pattern as the state long-poll, so an action
-			// posted in the check-to-wait gap can't leave the host hanging for the
-			// whole wait budget.
-			const deadline = Date.now() + LONG_POLL_MAX_WAIT;
-			while (!record && Date.now() < deadline) {
-				const wakeUp = createWaiter(
-					this.actionWaiters,
-					Math.min(1_500, deadline - Date.now()),
-				);
-				record = await this.getRecord("action", ACTION_TTL);
-				if (record) {
-					break; // the registered waiter times out harmlessly
-				}
-				await wakeUp;
-				record = await this.getRecord("action", ACTION_TTL);
-			}
-		}
+		// ?wait=1 is not honored here either - see handleGetState for why holding requests
+		// open broke Durable Object instances. Immediate answers, clients poll.
+		const record = await this.getRecord("action", ACTION_TTL);
 		if (!record) {
 			return emptyResponse(origin);
 		}
